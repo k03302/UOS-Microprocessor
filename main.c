@@ -55,6 +55,17 @@ ISR(TIMER1_COMPA_vect) {
 	millisec++;
 }
 
+ISR(INT4_vect) {
+	PORTA = 0xff;
+}
+
+ISR(INT5_vect) {
+	PORTA = 0xff;
+}
+
+
+
+
 void led_init()
 {
 	DDRA = 0xFF;
@@ -68,6 +79,10 @@ void adc_init(int channel)
 	ADCSRA = (1 << ADEN) | (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0);
 }
 
+void switch_init() {
+	EIMSK |= (1 << INT4) | (1 << INT5);
+	EICRB |= (1 << ISC41) | (1 << ISC51);
+}
 
 void timer1_init() {
 	// CTC mode, prescaler 64
@@ -87,6 +102,7 @@ int main() {
 	timer1_init();
 	fnd_init();
 	adc_init(2);
+	switch_init();
 	sei();
 
 
