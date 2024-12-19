@@ -93,7 +93,7 @@ void fnd_print_one_digit(int value, int digit_index)
     PORTG = 0x01 << digit_index;
 }
 
-void fnd_turn_off()
+void fnd_clear()
 {
     for (int i = 0; i < 4; i++)
     {
@@ -102,7 +102,7 @@ void fnd_turn_off()
     }
 }
 
-void led_turn_off()
+void led_print_clear()
 {
     PORTA = 0x00;
 }
@@ -124,14 +124,6 @@ void led_accumulate_print(int value, int start, int end)
         led |= 1;
     }
     PORTA = led;
-}
-
-void led_toggle_print(int value, int start, int end)
-{
-    int interval = get_led_interval(start, end);
-    int led_num = value / interval;
-
-    PORTA ^= (1 << led_num);
 }
 
 void set_rgb_led(int turn_on)
@@ -267,6 +259,7 @@ void clap_state_machine()
         break;
 
     case 4:
+        led_print_clear();
         break;
     }
 }
@@ -357,7 +350,6 @@ void system_state_machine()
             threshold_update_timestamp = timestamp;
             fnd_next_digit_timestamp = timestamp;
             fnd_update_timestamp = timestamp;
-            led_indicator_toggle_timestamp = timestamp;
         }
         last_knob_A = current_knob_A;
         last_knob_B = current_knob_B;
@@ -379,16 +371,10 @@ void system_state_machine()
             sound_threshold_display = sound_threshold;
         }
 
-        if (timestamp - led_indicator_toggle_timestamp > LED_INDICATOR_TOGGLE_PERIOD)
-        {
-            led_indicator_toggle_timestamp = timestamp;
-            led_toggle_print(sound_threshold, MIN_ADJUSTABLE_SOUND, MAX_ADJUSTABLE_SOUND);
-        }
-
         if (timestamp - threshold_update_timestamp > THRESHOLD_UPDATE_TIMEOUT)
         {
-            fnd_turn_off();
-            led_turn_off();
+            fnd_clear();
+            led_print_clear();
             system_mode = 0;
         }
 
@@ -440,6 +426,7 @@ int main()
     {
         // int sound_value_realtime = read_adc();
         // fnd_print(sound_value_realtime);
+        // led_accumulate_print(sound_value_realtime, MIN_ADJUSTABLE_SOUND, MAX_ADJUSTABLE_SOUND);
         // clap_state_machine(sound_value_realtime);
         // PORTA = clap_state;
 
