@@ -1,3 +1,6 @@
 Debug
 GccApplication1.componentinfo.xml
 GccApplication1.cproj
+.vscode/
+tools/
+build/
