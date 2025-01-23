@@ -1,4 +1,3 @@
-#define F_CPU 1600000UL // CPU 진동수
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
