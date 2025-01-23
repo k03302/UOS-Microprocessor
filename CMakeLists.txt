@@ -6,6 +6,7 @@ set(CMAKE_SYSTEM_PROCESSOR AVR)
 set(BINUTILS_PATH ${AVR_TOOLCHAIN_DIR})
 
 set(TOOLCHAIN_PREFIX ${AVR_TOOLCHAIN_DIR}/bin/avr-)
+set(TOOLCHAIN_INCLUDE ${AVR_TOOLCHAIN_DIR}/include)
 
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 
@@ -68,6 +69,7 @@ target_include_directories(${EXECUTABLE} PRIVATE
   src/hw
   src/common
   src/common/hw/include
+  ${TOOLCHAIN_INCLUDE}
   )
 
 target_include_directories(${EXECUTABLE} PUBLIC include)
