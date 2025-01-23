@@ -349,7 +349,7 @@ void lamp_state_machine()
         {
             adc_change_start_timestamp = timestamp;
             adc_init(2);
-            lamp_mode = LAMP_ADC_CHECK_SOUND;
+            lamp_mode = LAMP_ADC_CHANGE_SOUND;
         }
         break;
 
