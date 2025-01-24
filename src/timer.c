@@ -1,6 +1,19 @@
 #include <avr/io.h>
 #include "timer.h"
 
+#define TIMER_COUNT 10
+
+struct TimerEvent
+{
+    unsigned long long interval;
+    unsigned long long next_trigger_time;
+    void (*callback)(void);
+    int is_interval; // 1 for interval, 0 for timeout
+    int is_active;   // 1 if the timer is active, 0 otherwise
+};
+
+static struct TimerEvent timer_events[TIMER_COUNT] = {0};
+
 static volatile long long timestamp = 0;
 
 // 타이머 인터럽트 함수
@@ -24,4 +37,63 @@ void timer_init(void)
 unsigned long long timer_get_time(void)
 {
     return timestamp;
+}
+
+int timer_set_timeout(unsigned long long interval, void (*callback)(void))
+{
+    if (interval == 0)
+    {
+        callback();
+        return 1;
+    }
+
+    int i;
+    for (i = 0; i < TIMER_COUNT; i++)
+    {
+        if (!timer_events[i].is_active)
+        {
+            timer_events[i].interval = interval;
+            timer_events[i].next_trigger_time = timestamp + interval;
+            timer_events[i].callback = callback;
+            timer_events[i].is_interval = 0; // timeout
+            timer_events[i].is_active = 1;
+            return 1; // 성공적으로 등록됨
+        }
+    }
+    return 0;
+}
+
+int timer_set_interval(unsigned long long interval, void (*callback)(void))
+{
+    if (interval == 0)
+    {
+        return 0;
+    }
+
+    int i;
+    for (i = 0; i < TIMER_COUNT; i++)
+    {
+        if (!timer_events[i].is_active)
+        {
+            timer_events[i].interval = interval;
+            timer_events[i].next_trigger_time = timestamp + interval;
+            timer_events[i].callback = callback;
+            timer_events[i].is_interval = 1; // interval
+            timer_events[i].is_active = 1;
+            return 1; // 성공적으로 등록됨
+        }
+    }
+    return 0;
+}
+
+void timer_clear_interval(void (*callback)(void))
+{
+    int i;
+    for (i = 0; i < TIMER_COUNT; i++)
+    {
+        if (timer_events[i].callback == callback)
+        {
+            timer_events[i].is_active = 0;
+        }
+    }
 }
