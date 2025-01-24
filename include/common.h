@@ -6,5 +6,6 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 #include "pin_setting.h"
+#include "timer.h"
 
 #endif
