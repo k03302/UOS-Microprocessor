@@ -1,6 +1,4 @@
-#include <avr/io.h>
-#include <avr/interrupt.h>
-#include <util/delay.h>
+#include "common.h"
 
 /*
 광감지센서 상수
