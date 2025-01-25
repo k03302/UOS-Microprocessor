@@ -32,3 +32,8 @@ int adc_read(enum AdcChannel channel)
         ;
     return ADC;
 }
+
+enum AdcChannel adc_get_current_channel()
+{
+    return current_channel;
+}

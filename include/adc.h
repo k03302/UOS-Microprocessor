@@ -26,4 +26,10 @@ void adc_init(enum AdcChannel channel);
 */
 int adc_read(enum AdcChannel channel);
 
+/*
+    @brief
+    현재 설정된 ADC 채널을 반환
+*/
+enum AdcChannel adc_get_current_channel();
+
 #endif
