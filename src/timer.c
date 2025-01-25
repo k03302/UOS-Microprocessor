@@ -20,6 +20,21 @@ static volatile long long timestamp = 0;
 ISR(TIMER1_COMPA_vect)
 {
     timestamp++;
+    for (int i = 0; i < TIMER_COUNT; i++)
+    {
+        if (timer_events[i].is_active && timestamp >= timer_events[i].next_trigger_time && timer_events[i].callback)
+        {
+            timer_events[i].callback();
+            if (timer_events[i].is_interval)
+            {
+                timer_events[i].next_trigger_time += timer_events[i].interval;
+            }
+            else
+            {
+                timer_events[i].is_active = 0; // timeout인 경우 비활성화
+            }
+        }
+    }
 }
 
 void timer_init(void)
