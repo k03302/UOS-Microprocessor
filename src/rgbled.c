@@ -4,6 +4,7 @@
 void rgb_led_init()
 {
     RGB_LED_DDR = RGB_LED_ALL_BITS;
+    rgb_led_set(0);
 }
 
 void rgb_led_set(int turn_on)
