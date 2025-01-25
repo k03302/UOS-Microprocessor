@@ -23,7 +23,7 @@ static long long adc_change_start_timestamp = 0;
 static long long sound_adc_start_timestamp = 0;
 static long long clap_toggle_timestamp = 0;
 
-void lamp_initialize()
+void lamp_state_machine_initialize()
 {
     lamp_mode = LAMP_DAY;
     adc_change_start_timestamp = 0;
@@ -86,9 +86,9 @@ void lamp_state_machine()
             adc_init(0);
             lamp_mode = LAMP_ADC_CHANGE_LIGHT;
         }
-        else if (clap_is_finished())
+        else if (clap_state_machine_finished())
         {
-            clap_initialize();
+            clap_state_machine_initialize();
             rgb_led_toggle();
 
             lamp_mode = LAMP_WAIT;

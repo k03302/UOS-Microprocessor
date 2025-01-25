@@ -20,12 +20,12 @@ static enum ClapState clap_state = CLAP_START;
 static long long clap_start_timestamp = 0;
 static long long clap_end_timestamp = 0;
 
-int clap_is_finished()
+int clap_state_machine_finished()
 {
     return clap_state == CLAP_SECOND_DROP;
 }
 
-void clap_initialize()
+void clap_state_machine_initialize()
 {
     clap_state = CLAP_START;
     clap_start_timestamp = 0;

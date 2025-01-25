@@ -17,12 +17,12 @@ void clap_state_machine();
     @return
     1 if finished, 0 otherwise
 */
-int clap_is_finished();
+int clap_state_machine_finished();
 
 /*
     @brief
     박수 상태머신 초기화
 */
-void clap_initialize();
+void clap_state_machine_initialize();
 
 #endif
