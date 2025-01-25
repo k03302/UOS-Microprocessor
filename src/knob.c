@@ -23,13 +23,13 @@ enum KnobTurnDirection knob_check(void)
 {
     int current_S1 = knob_check_S1();
     int current_S2 = knob_check_S2();
-    enum KnobTurnDirection direction = NONE;
+    enum KnobTurnDirection direction = KNOB_NONE;
 
     if (current_S1 != last_S1)
     {
         if (last_S1 == 1 && current_S1 == 0 && current_S2 == 0)
         {
-            direction += CLOCKWISE;
+            direction += KNOB_CLOCKWISE;
         }
     }
 
@@ -37,7 +37,7 @@ enum KnobTurnDirection knob_check(void)
     {
         if (last_S2 == 1 && current_S2 == 0 && current_S1 == 0)
         {
-            direction += COUNTERCLOCKWISE;
+            direction += KNOB_COUNTERCLOCKWISE;
         }
     }
 
@@ -49,5 +49,5 @@ enum KnobTurnDirection knob_check(void)
 
 int knob_is_turned(void)
 {
-    return knob_check() != NONE ? 1 : 0;
+    return knob_check() != KNOB_NONE ? 1 : 0;
 }

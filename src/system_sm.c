@@ -51,7 +51,7 @@ void system_state_machine()
     case SYSTEM_RUN:
         lamp_state_machine();
 
-        if (turn_direction != NONE)
+        if (turn_direction != KNOB_NONE)
         {
             system_mode = SYSTEM_SET;
 
@@ -83,16 +83,16 @@ void system_state_machine()
         }
 
         // knob이 돌려졌을 때 역치 조절
-        if (turn_direction != NONE)
+        if (turn_direction != KNOB_NONE)
         {
             timer_update_watch(&threshold_update_watch);
             adjust_amount = system_get_attribute(SOUND_THRESHOLD_ADJUST_AMOUNT);
-            if (turn_direction == CLOCKWISE)
+            if (turn_direction == KNOB_CLOCKWISE)
             {
                 system_set_attribute(SOUND_THRESHOLD,
                                      min(sound_threshold + adjust_amount, system_get_attribute(SOUND_THRESHOLD_MAX)));
             }
-            else if (turn_direction == COUNTERCLOCKWISE)
+            else if (turn_direction == KNOB_COUNTERCLOCKWISE)
             {
                 system_set_attribute(SOUND_THRESHOLD,
                                      max(sound_threshold - adjust_amount, system_get_attribute(SOUND_THRESHOLD_MIN)));

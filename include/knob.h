@@ -3,9 +3,9 @@
 
 enum KnobTurnDirection
 {
-    COUNTERCLOCKWISE = -1,
-    CLOCKWISE = 1,
-    NONE = 0
+    KNOB_COUNTERCLOCKWISE = -1,
+    KNOB_CLOCKWISE = 1,
+    KNOB_NONE = 0
 };
 
 /*
@@ -19,9 +19,9 @@ void knob_init(void);
     로터리 엔코더가 마지막 체크 이후 어떤 방향으로 회전했는지 리턴하는 함수
 
     @return
-    - COUNTERCLOCKWISE: 반시계 방향으로 회전
-    - CLOCKWISE: 시계 방향으로 회전
-    - NONE: 회전하지 않음
+    - KNOB_COUNTERCLOCKWISE: 반시계 방향으로 회전
+    - KNOB_CLOCKWISE: 시계 방향으로 회전
+    - KNOB_NONE: 회전하지 않음
 */
 enum KnobTurnDirection knob_check(void);
 
