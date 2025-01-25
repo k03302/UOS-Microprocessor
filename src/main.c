@@ -1,4 +1,10 @@
 #include "common.h"
+#include "rgbled.h"
+#include "fnd.h"
+#include "led.h"
+#include "knob.h"
+#include "adc.h"
+#include "utils.h"
 
 /*
 광감지센서 상수
@@ -60,10 +66,6 @@ volatile unsigned char fnd_digit[10] = {
 int system_mode = 0;
 int sound_threshold = 800;
 int sound_threshold_display = 800;
-int last_knob_A = 0;
-int last_knob_B = 0;
-int fnd_digit_index = 0;
-long long fnd_next_digit_timestamp = 0;
 long long fnd_update_timestamp = 0;
 long long led_indicator_toggle_timestamp = 0;
 long long fnd_print_update_timestamp = 0;
@@ -84,44 +86,6 @@ int clap_state = 0;
 long long clap_start_timestamp = 0;
 long long clap_end_timestamp = 0;
 
-// 현재 시간 (msec), 타이머 인터럽트에 의해 업데이트
-volatile long long timestamp = 0;
-
-// 타이머 인터럽트 함수
-ISR(TIMER1_COMPA_vect)
-{
-    timestamp++;
-}
-
-/*
-초기화 함수
-*/
-void led_init();
-void adc_init(int channel);
-void knob_init();
-void timer1_init();
-void fnd_init();
-
-/*
-유틸리티 함수
-*/
-int clamp(int value, int min, int max);
-
-unsigned int read_adc();
-
-void fnd_print_one_digit(int value, int digit_index);
-void fnd_clear();
-
-int get_led_interval(int start, int end);
-void led_accumulate_print(int value, int start, int end);
-void led_print_clear();
-
-void set_rgb_led(int turn_on);
-void toggle_rgb_led();
-
-int knob_check_A();
-int knob_check_B();
-
 /*
 상태 머신 함수
 */
@@ -129,137 +93,12 @@ void clap_state_machine();   // 박수 상태
 void lamp_state_machine();   // 램프 상태
 void system_state_machine(); // 시스템 상태태
 
-void led_init()
-{
-    DDRA = 0xFF;
-    DDRB = 0xE0;
-}
-
-void adc_init(int channel)
-{
-    ADMUX = 0x00;
-    ADMUX |= 0x0F & channel;
-
-    ADCSRA = (1 << ADEN) | (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0);
-}
-
-void knob_init()
-{
-    DDRE = 0x00;
-}
-
-void timer1_init()
-{
-    TCCR1B |= (1 << WGM12) | (1 << CS11) | (1 << CS10);
-    OCR1A = 25;
-    TIMSK |= (1 << OCIE1A);
-}
-
-void fnd_init()
-{
-    DDRC = 0xFF;
-    DDRG = 0x0F;
-}
-
-int clamp(int value, int min, int max)
-{
-    if (value > max)
-    {
-        return max;
-    }
-    if (value < min)
-    {
-        return min;
-    }
-    return value;
-}
-
-void fnd_print_one_digit(int value, int digit_index)
-{
-    unsigned char fnd_value[4] = {
-        fnd_digit[value % 10],
-        fnd_digit[(value / 10) % 10],
-        fnd_digit[(value / 100) % 10],
-        fnd_digit[(value / 1000) % 10]};
-
-    PORTC = fnd_value[digit_index];
-    PORTG = 0x01 << digit_index;
-}
-
-void fnd_clear()
-{
-    for (int i = 0; i < 4; i++)
-    {
-        PORTC = 0x00;
-        PORTG = 0x0F;
-    }
-}
-
-void led_print_clear()
-{
-    PORTA = 0x00;
-}
-
-int get_led_interval(int start, int end)
-{
-    return (end - start) >> 3;
-}
-
-void led_accumulate_print(int value, int start, int end)
-{
-    int led = 0x00;
-    int interval = get_led_interval(start, end);
-    value -= start;
-    while (value > 0)
-    {
-        value -= interval;
-        led <<= 1;
-        led |= 1;
-    }
-    PORTA = led;
-}
-
-void set_rgb_led(int turn_on)
-{
-    if (turn_on)
-    {
-        PORTB = 0xE0;
-    }
-    else
-    {
-        PORTB = 0x00;
-    }
-}
-
-void toggle_rgb_led()
-{
-    PORTB ^= 0xE0;
-}
-
-unsigned int read_adc()
-{
-    ADCSRA |= (1 << ADSC);
-    while ((ADCSRA & (1 << ADIF)) == 0)
-        ;
-    return ADC;
-}
-
-int knob_check_A()
-{
-    return (PINE & 0x80) == 0 ? 1 : 0;
-}
-
-int knob_check_B()
-{
-    return (PINE & 0x40) == 0 ? 1 : 0;
-}
-
 /*
     박수 상태 머신은 현재 아날라고 입력이 sound(ADC2)를 이용하고 있음을 가정한다.
 */
 void clap_state_machine()
 {
-    int sound_value_realtime = read_adc();
+    int sound_value_realtime = adc_read(ADC_CHANNEL_SOUND);
 
     switch (clap_state)
     {
@@ -267,7 +106,7 @@ void clap_state_machine()
     case CLAP_START:
         if (sound_value_realtime > sound_threshold)
         {
-            clap_start_timestamp = timestamp;
+            clap_start_timestamp = timer_get_time();
             clap_state = CLAP_FIRST_RISE;
         }
         break;
@@ -276,7 +115,7 @@ void clap_state_machine()
     case CLAP_SECOND_RISE:
         if (sound_value_realtime < sound_threshold)
         {
-            clap_end_timestamp = timestamp;
+            clap_end_timestamp = timer_get_time();
             int clap_duration = clap_end_timestamp - clap_start_timestamp;
 
             if (clap_duration < MIN_CLAP_DURATION)
@@ -296,7 +135,7 @@ void clap_state_machine()
     case CLAP_FIRST_DROP:
         if (sound_value_realtime > sound_threshold)
         {
-            clap_start_timestamp = timestamp;
+            clap_start_timestamp = timer_get_time();
             int clap_gap = clap_start_timestamp - clap_end_timestamp;
 
             if (clap_gap < MIN_CLAP_GAP)
@@ -314,7 +153,7 @@ void clap_state_machine()
         break;
 
     case CLAP_SECOND_DROP:
-        led_print_clear();
+        led_clear();
         break;
     }
 }
@@ -327,24 +166,24 @@ void lamp_state_machine()
     {
 
     case LAMP_DAY:
-        light_value_realtime = read_adc();
+        light_value_realtime = adc_read(ADC_CHANNEL_CDS);
         if (light_value_realtime < MIN_DAY_LIGHT)
         {
-            set_rgb_led(1);
+            rgb_led_set(1);
             lamp_mode = LAMP_NIGHT;
         }
         break;
 
     case LAMP_NIGHT:
-        light_value_realtime = read_adc();
+        light_value_realtime = adc_read(ADC_CHANNEL_CDS);
         if (light_value_realtime > MAX_NIGHT_LIGHT)
         {
-            set_rgb_led(0);
+            rgb_led_set(0);
             lamp_mode = LAMP_DAY;
         }
         else
         {
-            adc_change_start_timestamp = timestamp;
+            adc_change_start_timestamp = timer_get_time();
             adc_init(2);
             lamp_mode = LAMP_ADC_CHANGE_SOUND;
         }
@@ -352,15 +191,15 @@ void lamp_state_machine()
 
     case LAMP_ADC_CHANGE_SOUND:
     case LAMP_ADC_CHANGE_LIGHT:
-        if (timestamp - adc_change_start_timestamp > ADC_CHANGE_TIMEOUT)
+        if (timer_get_time() - adc_change_start_timestamp > ADC_CHANGE_TIMEOUT)
         {
             lamp_mode = (lamp_mode == LAMP_ADC_CHANGE_SOUND) ? LAMP_CHECK_SOUND : LAMP_NIGHT;
-            sound_adc_start_timestamp = timestamp;
+            sound_adc_start_timestamp = timer_get_time();
         }
         break;
 
     case LAMP_WAIT:
-        if (timestamp - clap_toggle_timestamp > CLAP_TOGGLE_TIMEOUT)
+        if (timer_get_time() - clap_toggle_timestamp > CLAP_TOGGLE_TIMEOUT)
         {
             lamp_mode = LAMP_CHECK_SOUND;
         }
@@ -368,19 +207,19 @@ void lamp_state_machine()
 
     case LAMP_CHECK_SOUND:
         clap_state_machine();
-        if (timestamp - sound_adc_start_timestamp > LIGHT_CHECK_PERIOD)
+        if (timer_get_time() - sound_adc_start_timestamp > LIGHT_CHECK_PERIOD)
         {
-            adc_change_start_timestamp = timestamp;
+            adc_change_start_timestamp = timer_get_time();
             adc_init(0);
             lamp_mode = LAMP_ADC_CHANGE_LIGHT;
         }
         else if (clap_state == CLAP_SECOND_DROP)
         {
             clap_state = CLAP_START;
-            toggle_rgb_led();
+            rgb_led_toggle();
 
             lamp_mode = LAMP_WAIT;
-            clap_toggle_timestamp = timestamp;
+            clap_toggle_timestamp = timer_get_time();
         }
         break;
     }
@@ -388,87 +227,54 @@ void lamp_state_machine()
 
 void system_state_machine()
 {
-    int current_knob_A, current_knob_B;
+    enum KnobTurnDirection turn_direction = knob_check();
 
     switch (system_mode)
     {
     case SYSTEM_RUN:
         lamp_state_machine();
 
-        current_knob_A = knob_check_A();
-        current_knob_B = knob_check_B();
-        if (current_knob_A != last_knob_A || current_knob_B != last_knob_B)
+        if (turn_direction != NONE)
         {
             system_mode = SYSTEM_SET;
 
-            fnd_digit_index = 0;
-            threshold_update_timestamp = timestamp;
-            fnd_next_digit_timestamp = timestamp;
-            fnd_update_timestamp = timestamp;
+            threshold_update_timestamp = timer_get_time();
+            fnd_update_timestamp = timer_get_time();
         }
-        last_knob_A = current_knob_A;
-        last_knob_B = current_knob_B;
         break;
 
     case SYSTEM_SET:
         led_accumulate_print(sound_threshold_display, MIN_ADJUSTABLE_SOUND, MAX_ADJUSTABLE_SOUND);
 
-        //
-        if (timestamp - fnd_next_digit_timestamp > FND_NEXT_DIGIT_PERIOD)
-        {
-            fnd_next_digit_timestamp = timestamp;
-            fnd_print_one_digit(sound_threshold_display, fnd_digit_index);
-            fnd_digit_index = (fnd_digit_index + 1) % 4;
-        }
+        fnd_set_print_value(sound_threshold_display);
 
         // fnd에 포시할 숫자를 일정 주기마다 업데이트
-        if (timestamp - fnd_update_timestamp > FND_UPDATE_PERIOD)
+        if (timer_get_time() - fnd_update_timestamp > FND_UPDATE_PERIOD)
         {
-            fnd_update_timestamp = timestamp;
+            fnd_update_timestamp = timer_get_time();
             sound_threshold_display = sound_threshold;
         }
 
         // 역치 조절을 한 후 시간이 경과했을 때 SYSTEM_RUN으로 변경
-        if (timestamp - threshold_update_timestamp > THRESHOLD_UPDATE_TIMEOUT)
+        if (timer_get_time() - threshold_update_timestamp > THRESHOLD_UPDATE_TIMEOUT)
         {
             fnd_clear();
-            led_print_clear();
+            led_clear();
             system_mode = SYSTEM_RUN;
         }
 
-        current_knob_A = knob_check_A();
-        current_knob_B = knob_check_B();
-
-        // 로터리 엔코더의 회전 방향이 순방향인지 체크
-        if (current_knob_A != last_knob_A)
+        if (turn_direction == CLOCKWISE)
         {
-            threshold_update_timestamp = timestamp;
+            threshold_update_timestamp = timer_get_time();
 
-            if (last_knob_A == 1 && current_knob_A == 0)
-            {
-                if (current_knob_B == 0)
-                {
-                    sound_threshold = clamp(sound_threshold + SOUND_ADJUST_AMOUNT, MIN_ADJUSTABLE_SOUND, MAX_ADJUSTABLE_SOUND);
-                }
-            }
+            sound_threshold = clamp(sound_threshold + SOUND_ADJUST_AMOUNT, MIN_ADJUSTABLE_SOUND, MAX_ADJUSTABLE_SOUND);
         }
-
-        // 로터리 엔코더의 회전 방향이 역방향인지 체크
-        if (current_knob_B != last_knob_B)
+        else if (turn_direction == COUNTERCLOCKWISE)
         {
-            threshold_update_timestamp = timestamp;
+            threshold_update_timestamp = timer_get_time();
 
-            if (last_knob_B == 1 && current_knob_B == 0)
-            {
-                if (current_knob_A == 0)
-                {
-                    sound_threshold = clamp(sound_threshold - SOUND_ADJUST_AMOUNT, MIN_ADJUSTABLE_SOUND, MAX_ADJUSTABLE_SOUND);
-                }
-            }
+            sound_threshold = clamp(sound_threshold - SOUND_ADJUST_AMOUNT, MIN_ADJUSTABLE_SOUND, MAX_ADJUSTABLE_SOUND);
         }
-
-        last_knob_A = current_knob_A;
-        last_knob_B = current_knob_B;
 
         break;
     }
@@ -477,9 +283,9 @@ void system_state_machine()
 int main()
 {
     led_init();
-    timer1_init();
+    timer_init();
     fnd_init();
-    adc_init(0);
+    adc_init(ADC_CHANNEL_CDS);
     knob_init();
     sei();
 
