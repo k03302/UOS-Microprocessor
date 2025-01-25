@@ -1,5 +1,6 @@
 #include "common.h"
 #include "led.h"
+#include <assert.h>
 
 void led_init(void)
 {
@@ -14,7 +15,7 @@ void led_clear(void)
 
 void led_accumulate_print(int value, int start, int end)
 {
-    static_assert(start < end);
+    assert(start < end);
 
     if (value >= start)
     {
