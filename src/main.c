@@ -6,6 +6,7 @@
 #include "adc.h"
 #include "utils.h"
 #include "system.h"
+#include "clap_sm.h"
 
 enum SystemState
 {
@@ -21,15 +22,6 @@ enum LampState
     LAMP_ADC_CHANGE_SOUND,
     LAMP_ADC_CHANGE_LIGHT,
     LAMP_WAIT
-};
-
-enum ClapState
-{
-    CLAP_START,
-    CLAP_FIRST_RISE,
-    CLAP_FIRST_DROP,
-    CLAP_SECOND_RISE,
-    CLAP_SECOND_DROP
 };
 
 /*
@@ -49,79 +41,6 @@ enum LampState lamp_mode = LAMP_DAY;
 long long adc_change_start_timestamp = 0;
 long long sound_adc_start_timestamp = 0;
 long long clap_toggle_timestamp = 0;
-
-/*
-박수 상태머신 관련 변수
-*/
-enum ClapState clap_state = CLAP_START;
-long long clap_start_timestamp = 0;
-long long clap_end_timestamp = 0;
-
-/*
-    박수 상태 머신은 현재 아날라고 입력이 sound(ADC2)를 이용하고 있음을 가정한다.
-*/
-void clap_state_machine()
-{
-    int sound_value_realtime = adc_read(ADC_CHANNEL_SOUND);
-    int sound_threshold = system_get_attribute(SOUND_THRESHOLD);
-
-    switch (clap_state)
-    {
-
-    case CLAP_START:
-        if (sound_value_realtime > sound_threshold)
-        {
-            clap_start_timestamp = timer_get_time();
-            clap_state = CLAP_FIRST_RISE;
-        }
-        break;
-
-    case CLAP_FIRST_RISE:
-    case CLAP_SECOND_RISE:
-        if (sound_value_realtime < sound_threshold)
-        {
-            clap_end_timestamp = timer_get_time();
-            int clap_duration = clap_end_timestamp - clap_start_timestamp;
-
-            if (clap_duration < system_get_attribute(CLAP_MIN_DURATION))
-            {
-            }
-            else if (clap_duration > system_get_attribute(CLAP_MAX_DURATION))
-            {
-                clap_state = CLAP_START;
-            }
-            else
-            {
-                clap_state = (clap_state == CLAP_FIRST_RISE) ? CLAP_FIRST_DROP : CLAP_SECOND_DROP;
-            }
-        }
-        break;
-
-    case CLAP_FIRST_DROP:
-        if (sound_value_realtime > sound_threshold)
-        {
-            clap_start_timestamp = timer_get_time();
-            int clap_gap = clap_start_timestamp - clap_end_timestamp;
-
-            if (clap_gap < system_get_attribute(CLAP_MIN_GAP))
-            {
-            }
-            else if (clap_gap > system_get_attribute(CLAP_MAX_GAP))
-            {
-                clap_state = CLAP_FIRST_RISE;
-            }
-            else
-            {
-                clap_state = CLAP_SECOND_RISE;
-            }
-        }
-        break;
-
-    case CLAP_SECOND_DROP:
-        led_clear();
-        break;
-    }
-}
 
 void lamp_state_machine()
 {
@@ -178,9 +97,9 @@ void lamp_state_machine()
             adc_init(0);
             lamp_mode = LAMP_ADC_CHANGE_LIGHT;
         }
-        else if (clap_state == CLAP_SECOND_DROP)
+        else if (clap_is_finished())
         {
-            clap_state = CLAP_START;
+            clap_initialize();
             rgb_led_toggle();
 
             lamp_mode = LAMP_WAIT;
