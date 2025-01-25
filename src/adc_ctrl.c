@@ -1,5 +1,5 @@
 #include "common.h"
-#include "adc.h"
+#include "adc_ctrl.h"
 #include <assert.h>
 
 static enum AdcChannel current_channel;

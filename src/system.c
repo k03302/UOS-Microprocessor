@@ -4,7 +4,7 @@
 #include "fnd.h"
 #include "led.h"
 #include "knob.h"
-#include "adc.h"
+#include "adc_ctrl.h"
 #include "utils.h"
 
 static int system_attributes[SYSTEM_ATTRIBUTE_END];

@@ -1,7 +1,7 @@
 #include "clap_sm.h"
 #include "common.h"
 #include "system.h"
-#include "adc.h"
+#include "adc_ctrl.h"
 #include "led.h"
 
 enum ClapState
