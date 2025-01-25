@@ -5,39 +5,7 @@
 #include "knob.h"
 #include "adc.h"
 #include "utils.h"
-
-/*
-광감지센서 상수
-ADC0 이용
-value: 0 ~ 1023
-*/
-#define CDS_NIGHT_THRESHOLD 600 // 밤이 되기 위한 조도 역치 (0~1023)
-#define CDS_DAY_THRESHOLD 900   // 낮이 되기 위한 조도 역치 (0~1023)
-
-/*
-사운드센서 상수
-ADC2 이용
-value: 0 ~ 1023
-일상소음: 300~600
-근접 박수소리: 800~900
-*/
-#define SOUND_THRESHOLD_MAX 1000         // 최대로 조절할 수 있는 박수소리 역치 (0~1023)
-#define SOUND_THRESHOLD_MIN 500          // 최소로 조절할 수 있는 박수소리 역치 (0~1023)
-#define SOUND_THRESHOLD_ADJUST_AMOUNT 10 // 한 번에 조절할 수 있는 박수소리 역치 (0~1023)
-#define CLAP_MIN_DURATION 10             // 박수 스파이크 지속시간 최소 (msec)
-#define CLAP_MAX_DURATION 30             // 박수 스파이크 지속시간 최대 (msec)
-#define CLAP_MIN_GAP 200                 // 박수 간격 최소(msec)
-#define CLAP_MAX_GAP 1000                // 박수 간격 최대(msec)
-
-/*
-상태머신 상수
-*/
-#define FND_NEXT_DIGIT_PERIOD 1 // FND에 다음 digit을 출력하는 주기 (msec)
-#define FND_UPDATE_PERIOD 100   // FND에 출력할 수치를 업데이트하는 주기 (msec)
-#define FND_UPDATE_TIMEOUT 2000 // 박수소리 역치 디스플레이를 끝내는 시간 (msec)
-#define ADC_CHANGE_TIMEOUT 10   // ADC 입력원을 변경할 때의 대기시간 (msec)
-#define CLAP_TOGGLE_WAIT 1000   // SET모드를 끝내기 위한 대기시간간
-#define CDS_CHECK_PERIOD 1000   // 조도를 감지하는 주기 (msec)
+#include "system.h"
 
 enum SystemState
 {
@@ -115,10 +83,10 @@ void clap_state_machine()
             clap_end_timestamp = timer_get_time();
             int clap_duration = clap_end_timestamp - clap_start_timestamp;
 
-            if (clap_duration < CLAP_MIN_DURATION)
+            if (clap_duration < system_get_attribute(CLAP_MIN_DURATION))
             {
             }
-            else if (clap_duration > CLAP_MAX_DURATION)
+            else if (clap_duration > system_get_attribute(CLAP_MAX_DURATION))
             {
                 clap_state = CLAP_START;
             }
@@ -135,10 +103,10 @@ void clap_state_machine()
             clap_start_timestamp = timer_get_time();
             int clap_gap = clap_start_timestamp - clap_end_timestamp;
 
-            if (clap_gap < CLAP_MIN_GAP)
+            if (clap_gap < system_get_attribute(CLAP_MIN_GAP))
             {
             }
-            else if (clap_gap > CLAP_MAX_GAP)
+            else if (clap_gap > system_get_attribute(CLAP_MAX_GAP))
             {
                 clap_state = CLAP_FIRST_RISE;
             }
@@ -164,7 +132,7 @@ void lamp_state_machine()
 
     case LAMP_DAY:
         light_value_realtime = adc_read(ADC_CHANNEL_CDS);
-        if (light_value_realtime < CDS_NIGHT_THRESHOLD)
+        if (light_value_realtime < system_get_attribute(CDS_NIGHT_THRESHOLD))
         {
             rgb_led_set(1);
             lamp_mode = LAMP_NIGHT;
@@ -173,7 +141,7 @@ void lamp_state_machine()
 
     case LAMP_NIGHT:
         light_value_realtime = adc_read(ADC_CHANNEL_CDS);
-        if (light_value_realtime > CDS_DAY_THRESHOLD)
+        if (light_value_realtime > system_get_attribute(CDS_DAY_THRESHOLD))
         {
             rgb_led_set(0);
             lamp_mode = LAMP_DAY;
@@ -188,7 +156,7 @@ void lamp_state_machine()
 
     case LAMP_ADC_CHANGE_SOUND:
     case LAMP_ADC_CHANGE_LIGHT:
-        if (timer_get_time() - adc_change_start_timestamp > ADC_CHANGE_TIMEOUT)
+        if (timer_get_time() - adc_change_start_timestamp > system_get_attribute(ADC_CHANGE_TIMEOUT))
         {
             lamp_mode = (lamp_mode == LAMP_ADC_CHANGE_SOUND) ? LAMP_CHECK_SOUND : LAMP_NIGHT;
             sound_adc_start_timestamp = timer_get_time();
@@ -196,7 +164,7 @@ void lamp_state_machine()
         break;
 
     case LAMP_WAIT:
-        if (timer_get_time() - clap_toggle_timestamp > CLAP_TOGGLE_WAIT)
+        if (timer_get_time() - clap_toggle_timestamp > system_get_attribute(CLAP_TOGGLE_WAIT))
         {
             lamp_mode = LAMP_CHECK_SOUND;
         }
@@ -204,7 +172,7 @@ void lamp_state_machine()
 
     case LAMP_CHECK_SOUND:
         clap_state_machine();
-        if (timer_get_time() - sound_adc_start_timestamp > CDS_CHECK_PERIOD)
+        if (timer_get_time() - sound_adc_start_timestamp > system_get_attribute(CDS_CHECK_PERIOD))
         {
             adc_change_start_timestamp = timer_get_time();
             adc_init(0);
@@ -241,19 +209,19 @@ void system_state_machine()
         break;
 
     case SYSTEM_SET:
-        led_accumulate_print(sound_threshold_display, SOUND_THRESHOLD_MIN, SOUND_THRESHOLD_MAX);
+        led_accumulate_print(sound_threshold_display, system_get_attribute(SOUND_THRESHOLD_MIN), system_get_attribute(SOUND_THRESHOLD_MAX));
 
         fnd_set_print_value(sound_threshold_display);
 
         // fnd에 포시할 숫자를 일정 주기마다 업데이트
-        if (timer_get_time() - fnd_update_timestamp > FND_UPDATE_PERIOD)
+        if (timer_get_time() - fnd_update_timestamp > system_get_attribute(FND_UPDATE_PERIOD))
         {
             fnd_update_timestamp = timer_get_time();
             sound_threshold_display = sound_threshold;
         }
 
         // 역치 조절을 한 후 시간이 경과했을 때 SYSTEM_RUN으로 변경
-        if (timer_get_time() - threshold_update_timestamp > FND_UPDATE_TIMEOUT)
+        if (timer_get_time() - threshold_update_timestamp > system_get_attribute(FND_UPDATE_TIMEOUT))
         {
             fnd_clear();
             led_clear();
@@ -264,13 +232,13 @@ void system_state_machine()
         {
             threshold_update_timestamp = timer_get_time();
 
-            sound_threshold = clamp(sound_threshold + SOUND_THRESHOLD_ADJUST_AMOUNT, SOUND_THRESHOLD_MIN, SOUND_THRESHOLD_MAX);
+            sound_threshold = clamp(sound_threshold + system_get_attribute(SOUND_THRESHOLD_ADJUST_AMOUNT), system_get_attribute(SOUND_THRESHOLD_MIN), system_get_attribute(SOUND_THRESHOLD_MAX));
         }
         else if (turn_direction == COUNTERCLOCKWISE)
         {
             threshold_update_timestamp = timer_get_time();
 
-            sound_threshold = clamp(sound_threshold - SOUND_THRESHOLD_ADJUST_AMOUNT, SOUND_THRESHOLD_MIN, SOUND_THRESHOLD_MAX);
+            sound_threshold = clamp(sound_threshold - system_get_attribute(SOUND_THRESHOLD_ADJUST_AMOUNT), system_get_attribute(SOUND_THRESHOLD_MIN), system_get_attribute(SOUND_THRESHOLD_MAX));
         }
 
         break;
@@ -279,13 +247,7 @@ void system_state_machine()
 
 int main()
 {
-    led_init();
-    timer_init();
-    fnd_init();
-    adc_init(ADC_CHANNEL_CDS);
-    knob_init();
-    sei();
-
+    system_init();
     while (1)
     {
         system_state_machine();

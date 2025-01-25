@@ -1,6 +1,8 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include <assert.h>
+
 inline int clamp(int value, int min, int max)
 {
     if (value > max)
