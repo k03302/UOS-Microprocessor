@@ -43,7 +43,7 @@ void fnd_set_print_value(int value)
 
 void fnd_clear(void)
 {
-    timer_clear_interval(fnd_set_print_value);
+    timer_clear_interval(fnd_print_current_digit);
     FND_DATA_BASE = 0x00;
     FND_SELECT_BASE = FND_SELECT_ALL_BITS;
 }
