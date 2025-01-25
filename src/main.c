@@ -5,7 +5,7 @@
 #include "knob.h"
 #include "adc_ctrl.h"
 #include "utils.h"
-#include "system.h"
+#include "system_config.h"
 #include "lamp_sm.h"
 
 enum SystemState
@@ -89,7 +89,8 @@ void system_state_machine()
 
 int main()
 {
-    system_init();
+    system_init_config();
+    system_state_machine_initialize();
     while (1)
     {
         system_state_machine();

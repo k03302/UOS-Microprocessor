@@ -1,5 +1,5 @@
 #include "common.h"
-#include "system.h"
+#include "system_config.h"
 #include "rgbled.h"
 #include "fnd.h"
 #include "led.h"
@@ -9,7 +9,7 @@
 
 static int system_attributes[SYSTEM_ATTRIBUTE_END];
 
-void system_init()
+void system_init_config()
 {
     led_init();
     timer_init();

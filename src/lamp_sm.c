@@ -1,6 +1,6 @@
 #include "lamp_sm.h"
 #include "clap_sm.h"
-#include "system.h"
+#include "system_config.h"
 #include "adc_ctrl.h"
 #include "rgbled.h"
 #include "common.h"
@@ -57,7 +57,7 @@ void lamp_state_machine()
         else
         {
             adc_change_start_timestamp = timer_get_time();
-            adc_init(2);
+            adc_init(ADC_CHANNEL_SOUND);
             lamp_mode = LAMP_ADC_CHANGE_SOUND;
         }
         break;
@@ -83,7 +83,7 @@ void lamp_state_machine()
         if (timer_get_time() - sound_adc_start_timestamp > system_get_attribute(CDS_CHECK_PERIOD))
         {
             adc_change_start_timestamp = timer_get_time();
-            adc_init(0);
+            adc_init(ADC_CHANNEL_CDS);
             lamp_mode = LAMP_ADC_CHANGE_LIGHT;
         }
         else if (clap_state_machine_finished())

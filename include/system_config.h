@@ -42,7 +42,7 @@ enum SystemAttribute
     @brief
     시스템 초기화 함수
 */
-void system_init();
+void system_init_config();
 
 /*
     @brief

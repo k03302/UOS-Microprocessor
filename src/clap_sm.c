@@ -1,6 +1,6 @@
 #include "clap_sm.h"
 #include "common.h"
-#include "system.h"
+#include "system_config.h"
 #include "adc_ctrl.h"
 #include "led.h"
 
@@ -28,8 +28,10 @@ int clap_state_machine_finished()
 void clap_state_machine_initialize()
 {
     clap_state = CLAP_START;
-    clap_start_timestamp = 0;
-    clap_end_timestamp = 0;
+
+    long long current_time = timer_get_time();
+    clap_start_timestamp = current_time;
+    clap_end_timestamp = current_time;
 }
 
 void clap_state_machine()
