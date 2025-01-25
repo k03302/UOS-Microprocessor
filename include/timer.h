@@ -9,7 +9,7 @@ void timer_init(void);
 
 /*
     @brief
-    타임스탬프 반환 (타임스탬프의 스케일은 내부 상수에 의해 결정)
+    타임스탬프 반환 (msec)
 */
 unsigned long long timer_get_time(void);
 
