@@ -55,11 +55,6 @@ value: 0 ~ 1023
 #define CLAP_SECOND_RISE 3
 #define CLAP_SECOND_DROP 4
 
-// 각 숫자를 나타내기 위한 위한 FND 상태
-volatile unsigned char fnd_digit[10] = {
-    0x3F, 0x06, 0x5B, 0x4F, 0x66,
-    0x6D, 0x7D, 0x07, 0x7F, 0x6F};
-
 /*
 시스템 상태머신 관련 변수
 */
@@ -80,18 +75,11 @@ long long sound_adc_start_timestamp = 0;
 long long clap_toggle_timestamp = 0;
 
 /*
-박수 상태머신 관련 변수수
+박수 상태머신 관련 변수
 */
 int clap_state = 0;
 long long clap_start_timestamp = 0;
 long long clap_end_timestamp = 0;
-
-/*
-상태 머신 함수
-*/
-void clap_state_machine();   // 박수 상태
-void lamp_state_machine();   // 램프 상태
-void system_state_machine(); // 시스템 상태태
 
 /*
     박수 상태 머신은 현재 아날라고 입력이 sound(ADC2)를 이용하고 있음을 가정한다.
