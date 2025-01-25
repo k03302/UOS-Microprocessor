@@ -21,6 +21,7 @@ static enum LampState lamp_mode = LAMP_DAY;
 static struct watch adc_change_watch;
 static struct watch cds_check_watch;
 static struct watch clap_toggle_watch;
+static int initialize_done = 0; // 초기화 함수를 호출했는지 여부
 
 // 상태 함수
 static void state_day(void);
@@ -40,6 +41,7 @@ static StateFuncNoParam state_table[LAMP_STATE_COUNT] = {
 
 void lamp_state_machine_initialize()
 {
+    initialize_done = 1;
     lamp_mode = LAMP_DAY;
 
     timer_get_watch(&adc_change_watch, system_get_attribute(ADC_CHANGE_TIMEOUT));
@@ -53,6 +55,7 @@ void lamp_state_machine_initialize()
 
 void lamp_state_machine()
 {
+    assert(initialize_done);
     state_table[lamp_mode]();
 }
 
