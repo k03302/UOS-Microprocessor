@@ -11,8 +11,8 @@
 ADC0 이용
 value: 0 ~ 1023
 */
-#define MIN_DAY_LIGHT 600   // 밤이 되기 위한 조도 역치 (0~1023)
-#define MAX_NIGHT_LIGHT 900 // 낮이 되기 위한 조도 역치 (0~1023)
+#define CDS_NIGHT_THRESHOLD 600 // 밤이 되기 위한 조도 역치 (0~1023)
+#define CDS_DAY_THRESHOLD 900   // 낮이 되기 위한 조도 역치 (0~1023)
 
 /*
 사운드센서 상수
@@ -21,44 +21,53 @@ value: 0 ~ 1023
 일상소음: 300~600
 근접 박수소리: 800~900
 */
-#define MAX_ADJUSTABLE_SOUND 1000 // 최대로 조절할 수 있는 박수소리 역치 (0~1023)
-#define MIN_ADJUSTABLE_SOUND 500  // 최소로 조절할 수 있는 박수소리 역치 (0~1023)
-#define SOUND_ADJUST_AMOUNT 10    // 한 번에 조절할 수 있는 박수소리 역치 (0~1023)
-#define MIN_CLAP_DURATION 10      // 박수 스파이크 지속시간 최소 (msec)
-#define MAX_CLAP_DURATION 30      // 박수 스파이크 지속시간 최대 (msec)
-#define MIN_CLAP_GAP 200          // 박수 간격 최소(msec)
-#define MAX_CLAP_GAP 1000         // 박수 간격 최대(msec)
+#define SOUND_THRESHOLD_MAX 1000         // 최대로 조절할 수 있는 박수소리 역치 (0~1023)
+#define SOUND_THRESHOLD_MIN 500          // 최소로 조절할 수 있는 박수소리 역치 (0~1023)
+#define SOUND_THRESHOLD_ADJUST_AMOUNT 10 // 한 번에 조절할 수 있는 박수소리 역치 (0~1023)
+#define CLAP_MIN_DURATION 10             // 박수 스파이크 지속시간 최소 (msec)
+#define CLAP_MAX_DURATION 30             // 박수 스파이크 지속시간 최대 (msec)
+#define CLAP_MIN_GAP 200                 // 박수 간격 최소(msec)
+#define CLAP_MAX_GAP 1000                // 박수 간격 최대(msec)
 
 /*
 상태머신 상수
 */
-#define FND_NEXT_DIGIT_PERIOD 1       // FND에 다음 digit을 출력하는 주기 (msec)
-#define FND_UPDATE_PERIOD 100         // FND에 출력할 수치를 업데이트하는 주기 (msec)
-#define THRESHOLD_UPDATE_TIMEOUT 2000 // 박수소리 역치 디스플레이를 끝내는 시간 (msec)
-#define ADC_CHANGE_TIMEOUT 10         // ADC 입력원을 변경할 때의 대기시간 (msec)
-#define CLAP_TOGGLE_TIMEOUT 1000      // SET모드를 끝내기 위한 대기시간간
-#define LIGHT_CHECK_PERIOD 1000       // 조도를 감지하는 주기 (msec)
+#define FND_NEXT_DIGIT_PERIOD 1 // FND에 다음 digit을 출력하는 주기 (msec)
+#define FND_UPDATE_PERIOD 100   // FND에 출력할 수치를 업데이트하는 주기 (msec)
+#define FND_UPDATE_TIMEOUT 2000 // 박수소리 역치 디스플레이를 끝내는 시간 (msec)
+#define ADC_CHANGE_TIMEOUT 10   // ADC 입력원을 변경할 때의 대기시간 (msec)
+#define CLAP_TOGGLE_WAIT 1000   // SET모드를 끝내기 위한 대기시간간
+#define CDS_CHECK_PERIOD 1000   // 조도를 감지하는 주기 (msec)
 
-#define SYSTEM_RUN 0
-#define SYSTEM_SET 1
+enum SystemState
+{
+    SYSTEM_RUN,
+    SYSTEM_SET
+};
 
-#define LAMP_DAY 0
-#define LAMP_NIGHT 1
-#define LAMP_CHECK_SOUND 2
-#define LAMP_ADC_CHANGE_SOUND 3
-#define LAMP_ADC_CHANGE_LIGHT 4
-#define LAMP_WAIT 5
+enum LampState
+{
+    LAMP_DAY,
+    LAMP_NIGHT,
+    LAMP_CHECK_SOUND,
+    LAMP_ADC_CHANGE_SOUND,
+    LAMP_ADC_CHANGE_LIGHT,
+    LAMP_WAIT
+};
 
-#define CLAP_START 0
-#define CLAP_FIRST_RISE 1
-#define CLAP_FIRST_DROP 2
-#define CLAP_SECOND_RISE 3
-#define CLAP_SECOND_DROP 4
+enum ClapState
+{
+    CLAP_START,
+    CLAP_FIRST_RISE,
+    CLAP_FIRST_DROP,
+    CLAP_SECOND_RISE,
+    CLAP_SECOND_DROP
+};
 
 /*
 시스템 상태머신 관련 변수
 */
-int system_mode = 0;
+enum SystemState system_mode = SYSTEM_RUN;
 int sound_threshold = 800;
 int sound_threshold_display = 800;
 long long fnd_update_timestamp = 0;
@@ -69,7 +78,7 @@ long long threshold_update_timestamp = 0;
 /*
 램프 상태머신 관련 변수
 */
-int lamp_mode = 0;
+enum LampState lamp_mode = LAMP_DAY;
 long long adc_change_start_timestamp = 0;
 long long sound_adc_start_timestamp = 0;
 long long clap_toggle_timestamp = 0;
@@ -77,7 +86,7 @@ long long clap_toggle_timestamp = 0;
 /*
 박수 상태머신 관련 변수
 */
-int clap_state = 0;
+enum ClapState clap_state = CLAP_START;
 long long clap_start_timestamp = 0;
 long long clap_end_timestamp = 0;
 
@@ -106,10 +115,10 @@ void clap_state_machine()
             clap_end_timestamp = timer_get_time();
             int clap_duration = clap_end_timestamp - clap_start_timestamp;
 
-            if (clap_duration < MIN_CLAP_DURATION)
+            if (clap_duration < CLAP_MIN_DURATION)
             {
             }
-            else if (clap_duration > MAX_CLAP_DURATION)
+            else if (clap_duration > CLAP_MAX_DURATION)
             {
                 clap_state = CLAP_START;
             }
@@ -126,10 +135,10 @@ void clap_state_machine()
             clap_start_timestamp = timer_get_time();
             int clap_gap = clap_start_timestamp - clap_end_timestamp;
 
-            if (clap_gap < MIN_CLAP_GAP)
+            if (clap_gap < CLAP_MIN_GAP)
             {
             }
-            else if (clap_gap > MAX_CLAP_GAP)
+            else if (clap_gap > CLAP_MAX_GAP)
             {
                 clap_state = CLAP_FIRST_RISE;
             }
@@ -155,7 +164,7 @@ void lamp_state_machine()
 
     case LAMP_DAY:
         light_value_realtime = adc_read(ADC_CHANNEL_CDS);
-        if (light_value_realtime < MIN_DAY_LIGHT)
+        if (light_value_realtime < CDS_NIGHT_THRESHOLD)
         {
             rgb_led_set(1);
             lamp_mode = LAMP_NIGHT;
@@ -164,7 +173,7 @@ void lamp_state_machine()
 
     case LAMP_NIGHT:
         light_value_realtime = adc_read(ADC_CHANNEL_CDS);
-        if (light_value_realtime > MAX_NIGHT_LIGHT)
+        if (light_value_realtime > CDS_DAY_THRESHOLD)
         {
             rgb_led_set(0);
             lamp_mode = LAMP_DAY;
@@ -187,7 +196,7 @@ void lamp_state_machine()
         break;
 
     case LAMP_WAIT:
-        if (timer_get_time() - clap_toggle_timestamp > CLAP_TOGGLE_TIMEOUT)
+        if (timer_get_time() - clap_toggle_timestamp > CLAP_TOGGLE_WAIT)
         {
             lamp_mode = LAMP_CHECK_SOUND;
         }
@@ -195,7 +204,7 @@ void lamp_state_machine()
 
     case LAMP_CHECK_SOUND:
         clap_state_machine();
-        if (timer_get_time() - sound_adc_start_timestamp > LIGHT_CHECK_PERIOD)
+        if (timer_get_time() - sound_adc_start_timestamp > CDS_CHECK_PERIOD)
         {
             adc_change_start_timestamp = timer_get_time();
             adc_init(0);
@@ -232,7 +241,7 @@ void system_state_machine()
         break;
 
     case SYSTEM_SET:
-        led_accumulate_print(sound_threshold_display, MIN_ADJUSTABLE_SOUND, MAX_ADJUSTABLE_SOUND);
+        led_accumulate_print(sound_threshold_display, SOUND_THRESHOLD_MIN, SOUND_THRESHOLD_MAX);
 
         fnd_set_print_value(sound_threshold_display);
 
@@ -244,7 +253,7 @@ void system_state_machine()
         }
 
         // 역치 조절을 한 후 시간이 경과했을 때 SYSTEM_RUN으로 변경
-        if (timer_get_time() - threshold_update_timestamp > THRESHOLD_UPDATE_TIMEOUT)
+        if (timer_get_time() - threshold_update_timestamp > FND_UPDATE_TIMEOUT)
         {
             fnd_clear();
             led_clear();
@@ -255,13 +264,13 @@ void system_state_machine()
         {
             threshold_update_timestamp = timer_get_time();
 
-            sound_threshold = clamp(sound_threshold + SOUND_ADJUST_AMOUNT, MIN_ADJUSTABLE_SOUND, MAX_ADJUSTABLE_SOUND);
+            sound_threshold = clamp(sound_threshold + SOUND_THRESHOLD_ADJUST_AMOUNT, SOUND_THRESHOLD_MIN, SOUND_THRESHOLD_MAX);
         }
         else if (turn_direction == COUNTERCLOCKWISE)
         {
             threshold_update_timestamp = timer_get_time();
 
-            sound_threshold = clamp(sound_threshold - SOUND_ADJUST_AMOUNT, MIN_ADJUSTABLE_SOUND, MAX_ADJUSTABLE_SOUND);
+            sound_threshold = clamp(sound_threshold - SOUND_THRESHOLD_ADJUST_AMOUNT, SOUND_THRESHOLD_MIN, SOUND_THRESHOLD_MAX);
         }
 
         break;
