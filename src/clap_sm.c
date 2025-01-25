@@ -29,9 +29,8 @@ void clap_state_machine_initialize()
 {
     clap_state = CLAP_START;
 
-    long long current_time = timer_get_time();
-    clap_start_timestamp = current_time;
-    clap_end_timestamp = current_time;
+    clap_start_timestamp = 0;
+    clap_end_timestamp = 0;
 }
 
 void clap_state_machine()

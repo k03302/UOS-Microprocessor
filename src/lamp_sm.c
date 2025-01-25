@@ -29,6 +29,10 @@ void lamp_state_machine_initialize()
     adc_change_start_timestamp = 0;
     sound_adc_start_timestamp = 0;
     clap_toggle_timestamp = 0;
+
+    adc_init(ADC_CHANNEL_CDS);
+    rgb_led_init();
+    clap_state_machine_initialize();
 }
 
 void lamp_state_machine()

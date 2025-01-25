@@ -1,23 +1,10 @@
-#include "common.h"
 #include "system_config.h"
-#include "rgbled.h"
-#include "fnd.h"
-#include "led.h"
-#include "knob.h"
-#include "adc_ctrl.h"
 #include "utils.h"
 
 static int system_attributes[SYSTEM_ATTRIBUTE_END];
 
 void system_init_config()
 {
-    led_init();
-    timer_init();
-    fnd_init();
-    adc_init(ADC_CHANNEL_CDS);
-    knob_init();
-    sei();
-
     system_attributes[SOUND_THRESHOLD] = 800;
     system_attributes[SOUND_THRESHOLD_MIN] = 500;
     system_attributes[SOUND_THRESHOLD_MAX] = 1000;
