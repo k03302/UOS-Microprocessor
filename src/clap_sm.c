@@ -4,21 +4,6 @@
 #include "adc_ctrl.h"
 #include "led.h"
 
-/*
-    다음과 같은 패턴의 2회의 박수를 인식한다.
-    CLAP_SECOND_BOTTOM 상태가 되면 finished 상태가 된다.
-    박수를 인식하는 조건은 다음과 같다.
-
-         /\            /\
-        /  \          /  \
-       /    \        /    \
-------/      \------/      \------
-
-    1. 박수소리가 너무 오래 지속되면 일반 소음으로 간주하여 초기화한다.
-    2. 박수소리가 너무 짧게 지속되면 지속시간이 확보될 때까지 무시한다.
-    3. 두 번째 박수가 너무 늦게 시작하면 첫 번째 박수로 간주한다.
-*/
-
 // 박수의 시작과 끝 타임스탬프를 저장
 static long long start_timestamp = 0;
 static long long end_timestamp = 0;
