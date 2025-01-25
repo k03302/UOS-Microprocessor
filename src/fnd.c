@@ -38,7 +38,7 @@ void fnd_set_print_value(int value)
 {
     print_value = value;
     current_digit_index = 0;
-    timer_set_interval(system_get_attribute(FND_UPDATE_PERIOD), fnd_print_current_digit);
+    timer_set_interval(system_get_attribute(SA_FND_UPDATE_PERIOD), fnd_print_current_digit);
 }
 
 void fnd_clear(void)

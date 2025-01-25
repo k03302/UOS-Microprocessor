@@ -44,9 +44,9 @@ void lamp_state_machine_initialize()
     initialize_done = 1;
     lamp_mode = LAMP_DAY;
 
-    timer_get_watch(&adc_change_watch, system_get_attribute(ADC_CHANGE_TIMEOUT));
-    timer_get_watch(&cds_check_watch, system_get_attribute(CDS_CHECK_PERIOD));
-    timer_get_watch(&clap_toggle_watch, system_get_attribute(CLAP_TOGGLE_WAIT));
+    timer_get_watch(&adc_change_watch, system_get_attribute(SA_ADC_CHANGE_TIMEOUT));
+    timer_get_watch(&cds_check_watch, system_get_attribute(SA_CDS_CHECK_PERIOD));
+    timer_get_watch(&clap_toggle_watch, system_get_attribute(SA_CLAP_TOGGLE_WAIT));
 
     adc_init(ADC_CHANNEL_CDS);
     rgb_led_init();
@@ -67,7 +67,7 @@ void lamp_state_machine()
 static void state_day(void)
 {
     int light_value_realtime = adc_read(ADC_CHANNEL_CDS);
-    if (light_value_realtime < system_get_attribute(CDS_NIGHT_THRESHOLD))
+    if (light_value_realtime < system_get_attribute(SA_CDS_NIGHT_THRESHOLD))
     {
         rgb_led_set(1);
         lamp_mode = LAMP_NIGHT;
@@ -83,7 +83,7 @@ static void state_day(void)
 static void state_night(void)
 {
     int light_value_realtime = adc_read(ADC_CHANNEL_CDS);
-    if (light_value_realtime > system_get_attribute(CDS_DAY_THRESHOLD))
+    if (light_value_realtime > system_get_attribute(SA_CDS_DAY_THRESHOLD))
     {
         rgb_led_set(0);
         lamp_mode = LAMP_DAY;

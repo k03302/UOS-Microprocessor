@@ -57,7 +57,7 @@ static void state_start(void)
 {
     assert(current_state == CLAP_START);
     int sound_value = adc_read(ADC_CHANNEL_SOUND);
-    int threshold = system_get_attribute(SOUND_THRESHOLD);
+    int threshold = system_get_attribute(SA_SOUND_THRESHOLD);
 
     // 소리가 역치 초과
     if (sound_value > threshold)
@@ -72,7 +72,7 @@ static void state_top_common(void)
 {
     assert(current_state == CLAP_FIRST_TOP || current_state == CLAP_SECOND_TOP);
     int sound_value = adc_read(ADC_CHANNEL_SOUND);
-    int threshold = system_get_attribute(SOUND_THRESHOLD);
+    int threshold = system_get_attribute(SA_SOUND_THRESHOLD);
 
     // 소리가 역치 미만으로 하강
     if (sound_value < threshold)
@@ -80,11 +80,11 @@ static void state_top_common(void)
         end_timestamp = timer_get_time();
         int duration = end_timestamp - start_timestamp;
 
-        if (duration < system_get_attribute(CLAP_MIN_DURATION))
+        if (duration < system_get_attribute(SA_CLAP_MIN_DURATION))
         {
             // 박수 스파이크가 너무 짧게 지속됨. 무시
         }
-        else if (duration > system_get_attribute(CLAP_MAX_DURATION))
+        else if (duration > system_get_attribute(SA_CLAP_MAX_DURATION))
         {
             // 박수 스파이크가 너무 길게 지속됨. 박수 아님 판정. 시작 상태로 복귀
             current_state = CLAP_START;
@@ -102,7 +102,7 @@ static void state_first_bottom(void)
 {
     assert(current_state == CLAP_FIRST_BOTTOM);
     int sound_value = adc_read(ADC_CHANNEL_SOUND);
-    int threshold = system_get_attribute(SOUND_THRESHOLD);
+    int threshold = system_get_attribute(SA_SOUND_THRESHOLD);
 
     // 소리가 역치 초과
     if (sound_value > threshold)
@@ -110,11 +110,11 @@ static void state_first_bottom(void)
         start_timestamp = timer_get_time();
         int gap = start_timestamp - end_timestamp;
 
-        if (gap < system_get_attribute(CLAP_MIN_GAP))
+        if (gap < system_get_attribute(SA_CLAP_MIN_GAP))
         {
             // 너무 짧은 박수 간 간격. 무시
         }
-        else if (gap > system_get_attribute(CLAP_MAX_GAP))
+        else if (gap > system_get_attribute(SA_CLAP_MAX_GAP))
         {
             // 너무 긴 박수 간 간격. 첫 번째 박수 스파이크로 간주
             current_state = CLAP_FIRST_TOP;

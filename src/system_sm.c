@@ -23,8 +23,8 @@ void system_state_machine_initialize()
 {
     system_mode = SYSTEM_RUN;
 
-    timer_get_watch(&fnd_update_watch, system_get_attribute(FND_UPDATE_PERIOD));
-    timer_get_watch(&threshold_update_watch, system_get_attribute(FND_UPDATE_TIMEOUT));
+    timer_get_watch(&fnd_update_watch, system_get_attribute(SA_FND_UPDATE_PERIOD));
+    timer_get_watch(&threshold_update_watch, system_get_attribute(SA_FND_UPDATE_TIMEOUT));
 
     timer_init();
     led_init();
@@ -35,7 +35,7 @@ void system_state_machine_initialize()
     system_init_config();
     lamp_state_machine_initialize();
 
-    sound_threshold_display = system_get_attribute(SOUND_THRESHOLD);
+    sound_threshold_display = system_get_attribute(SA_SOUND_THRESHOLD);
     initialize_done = 1;
 }
 
@@ -61,9 +61,9 @@ void system_state_machine()
         break;
 
     case SYSTEM_SET:
-        sound_threshold = system_get_attribute(SOUND_THRESHOLD);
+        sound_threshold = system_get_attribute(SA_SOUND_THRESHOLD);
 
-        led_accumulate_print(sound_threshold_display, system_get_attribute(SOUND_THRESHOLD_MIN), system_get_attribute(SOUND_THRESHOLD_MAX));
+        led_accumulate_print(sound_threshold_display, system_get_attribute(SA_SOUND_THRESHOLD_MIN), system_get_attribute(SA_SOUND_THRESHOLD_MAX));
 
         fnd_set_print_value(sound_threshold_display);
 
@@ -86,16 +86,16 @@ void system_state_machine()
         if (turn_direction != KNOB_NONE)
         {
             timer_update_watch(&threshold_update_watch);
-            adjust_amount = system_get_attribute(SOUND_THRESHOLD_ADJUST_AMOUNT);
+            adjust_amount = system_get_attribute(SA_SOUND_THRESHOLD_ADJUST_AMOUNT);
             if (turn_direction == KNOB_CLOCKWISE)
             {
-                system_set_attribute(SOUND_THRESHOLD,
-                                     min(sound_threshold + adjust_amount, system_get_attribute(SOUND_THRESHOLD_MAX)));
+                system_set_attribute(SA_SOUND_THRESHOLD,
+                                     min(sound_threshold + adjust_amount, system_get_attribute(SA_SOUND_THRESHOLD_MAX)));
             }
             else if (turn_direction == KNOB_COUNTERCLOCKWISE)
             {
-                system_set_attribute(SOUND_THRESHOLD,
-                                     max(sound_threshold - adjust_amount, system_get_attribute(SOUND_THRESHOLD_MIN)));
+                system_set_attribute(SA_SOUND_THRESHOLD,
+                                     max(sound_threshold - adjust_amount, system_get_attribute(SA_SOUND_THRESHOLD_MIN)));
             }
         }
 
