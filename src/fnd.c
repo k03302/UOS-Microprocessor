@@ -1,7 +1,7 @@
 #include "fnd.h"
 #include "common.h"
-#define FND_REFRESH_PERIOD 1 // FND 각 digit을 갱신하는 주기
-#define FND_DIGIT_COUNT 4    // FND의 digit 개수
+#include "system_config.h"
+#define FND_DIGIT_COUNT 4 // FND의 digit 개수
 
 static volatile unsigned char fnd_digit[10] = {
     0x3F, 0x06, 0x5B, 0x4F, 0x66,
@@ -38,7 +38,7 @@ void fnd_set_print_value(int value)
 {
     print_value = value;
     current_digit_index = 0;
-    timer_set_interval(FND_REFRESH_PERIOD, fnd_print_current_digit);
+    timer_set_interval(system_get_attribute(FND_UPDATE_PERIOD), fnd_print_current_digit);
 }
 
 void fnd_clear(void)
