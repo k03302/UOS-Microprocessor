@@ -5,7 +5,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
-#include "pin_setting.h"
+#include "pin_settings.h"
 #include "timer.h"
 #include "utils.h"
 

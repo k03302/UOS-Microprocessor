@@ -1,5 +1,5 @@
-#ifndef PIN_SETTING_H
-#define PIN_SETTING_H
+#ifndef PIN_SETTINGS_H
+#define PIN_SETTINGS_H
 
 #include <avr/io.h>
 

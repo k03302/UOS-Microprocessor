@@ -10,7 +10,7 @@ This project is mood light with convenient features such as:
 
 https://github.com/user-attachments/assets/2c43986f-2cbc-41b9-9489-d0dff180075a
 
-# Configuration
+# Configuration & Build
 1. Setup hardware
     
     - Board: JKit-128-1
@@ -53,3 +53,26 @@ https://github.com/user-attachments/assets/2c43986f-2cbc-41b9-9489-d0dff180075a
     https://github.com/avrdudes/avrdude
 
 
+# Code
+```
+┌───────────────────────────────┐
+│      System State Machine     │
+├───────────────────────────────┤
+│        Lamp State Machine     │
+├───────────────────────────────┤
+│        Clap State Machine     │
+├───────────────────────────────┤
+│ Parapellal Control Programs   │
+│ (FND, LED, Timer, etc.)       │
+├──────────────────────┬────────┤
+│     Pin Settings     │ System │
+├──────────────────────┤ Config │
+│    ATmega128 Lib     │        │
+└──────────────────────┴────────┘
+```
+
+## System State Machine
+![](assets/system_state_machine.png)
+
+## Lamp State Machine
+![](assets/lamp_state_machine.png)
