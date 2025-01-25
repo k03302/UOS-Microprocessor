@@ -38,6 +38,43 @@ ISR(TIMER1_COMPA_vect)
     }
 }
 
+void timer_get_watch(struct watch *w, unsigned int wait_time)
+{
+    assert(w != (void *)0);
+    w->start_timestamp = timer_get_time();
+    w->wait_time = wait_time;
+}
+
+int timer_check_watch(struct watch *w)
+{
+    assert(w != (void *)0);
+
+    if (timer_get_time() - w->start_timestamp >= w->wait_time)
+    {
+        return 1; // 시간이 경과함
+    }
+    return 0; // 시간이 경과하지 않음
+}
+
+void timer_update_watch(struct watch *w)
+{
+    assert(w != (void *)0);
+
+    w->start_timestamp = timer_get_time();
+}
+
+int timer_check_update_watch(struct watch *w)
+{
+    assert(w != (void *)0);
+
+    if (timer_get_time() - w->start_timestamp >= w->wait_time)
+    {
+        w->start_timestamp = timer_get_time();
+        return 1; // 시간이 경과함
+    }
+    return 0; // 시간이 경과하지 않음
+}
+
 void timer_init(void)
 {
     // 타이머1을 CTC 모드로 동작시키고, 시스템 클럭을 64로 나눈 속도로 타이머가 증가하도록 설정
