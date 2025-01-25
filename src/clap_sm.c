@@ -36,15 +36,13 @@ enum ClapState
 
 static enum ClapState current_state = CLAP_START;
 
-typedef void (*ClapStateFunc)(void);
-
 // 상태 함수
 static void state_start(void);
 static void state_top_common(void);
 static void state_first_bottom(void);
 static void state_second_bottom(void);
 
-static ClapStateFunc state_table[CLAP_STATE_COUNT] = {
+static StateFuncNoParam state_table[CLAP_STATE_COUNT] = {
     state_start,
     state_top_common,
     state_first_bottom,

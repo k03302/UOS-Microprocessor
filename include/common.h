@@ -9,4 +9,6 @@
 #include "timer.h"
 #include "utils.h"
 
+typedef void (*StateFuncNoParam)(void);
+
 #endif
