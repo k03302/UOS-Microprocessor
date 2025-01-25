@@ -14,20 +14,17 @@ enum SystemState
 };
 
 static enum SystemState system_mode = SYSTEM_RUN;
-static int sound_threshold_display = 800;
-static long long fnd_update_timestamp = 0;
-static long long led_indicator_toggle_timestamp = 0;
-static long long fnd_print_update_timestamp = 0;
-static long long threshold_update_timestamp = 0;
+static int sound_threshold_display = 0;
+static struct watch fnd_update_watch;
+static struct watch threshold_update_watch;
+static int initialize_done = 0;
 
 void system_state_machine_initialize()
 {
     system_mode = SYSTEM_RUN;
 
-    fnd_update_timestamp = 0;
-    led_indicator_toggle_timestamp = 0;
-    fnd_print_update_timestamp = 0;
-    threshold_update_timestamp = 0;
+    timer_get_watch(&fnd_update_watch, system_get_attribute(FND_UPDATE_PERIOD));
+    timer_get_watch(&threshold_update_watch, system_get_attribute(FND_UPDATE_TIMEOUT));
 
     timer_init();
     led_init();
@@ -39,12 +36,15 @@ void system_state_machine_initialize()
     lamp_state_machine_initialize();
 
     sound_threshold_display = system_get_attribute(SOUND_THRESHOLD);
+    initialize_done = 1;
 }
 
 void system_state_machine()
 {
+    assert(initialize_done);
     enum KnobTurnDirection turn_direction = knob_check();
     int sound_threshold;
+    int adjust_amount;
 
     switch (system_mode)
     {
@@ -55,8 +55,8 @@ void system_state_machine()
         {
             system_mode = SYSTEM_SET;
 
-            threshold_update_timestamp = timer_get_time();
-            fnd_update_timestamp = timer_get_time();
+            timer_update_watch(&threshold_update_watch);
+            timer_update_watch(&fnd_update_watch);
         }
         break;
 
@@ -68,35 +68,34 @@ void system_state_machine()
         fnd_set_print_value(sound_threshold_display);
 
         // fnd에 포시할 숫자를 일정 주기마다 업데이트
-        if (timer_get_time() - fnd_update_timestamp > system_get_attribute(FND_UPDATE_PERIOD))
+        if (timer_check_update_watch(&fnd_update_watch))
         {
-            fnd_update_timestamp = timer_get_time();
             sound_threshold_display = sound_threshold;
         }
 
         // 역치 조절을 한 후 시간이 경과했을 때 SYSTEM_RUN으로 변경
-        if (timer_get_time() - threshold_update_timestamp > system_get_attribute(FND_UPDATE_TIMEOUT))
+        if (timer_check_watch(&threshold_update_watch))
         {
             fnd_clear();
             led_clear();
             system_mode = SYSTEM_RUN;
+            break;
         }
 
+        // knob이 돌려졌을 때 역치 조절
         if (turn_direction != NONE)
         {
+            timer_update_watch(&threshold_update_watch);
+            adjust_amount = system_get_attribute(SOUND_THRESHOLD_ADJUST_AMOUNT);
             if (turn_direction == CLOCKWISE)
             {
-                threshold_update_timestamp = timer_get_time();
-
                 system_set_attribute(SOUND_THRESHOLD,
-                                     clamp(sound_threshold + system_get_attribute(SOUND_THRESHOLD_ADJUST_AMOUNT), system_get_attribute(SOUND_THRESHOLD_MIN), system_get_attribute(SOUND_THRESHOLD_MAX)));
+                                     min(sound_threshold + adjust_amount, system_get_attribute(SOUND_THRESHOLD_MAX)));
             }
             else if (turn_direction == COUNTERCLOCKWISE)
             {
-                threshold_update_timestamp = timer_get_time();
-
                 system_set_attribute(SOUND_THRESHOLD,
-                                     clamp(sound_threshold - system_get_attribute(SOUND_THRESHOLD_ADJUST_AMOUNT), system_get_attribute(SOUND_THRESHOLD_MIN), system_get_attribute(SOUND_THRESHOLD_MAX)));
+                                     max(sound_threshold - adjust_amount, system_get_attribute(SOUND_THRESHOLD_MIN)));
             }
         }
 
