@@ -36,7 +36,6 @@ enum ClapState
 시스템 상태머신 관련 변수
 */
 enum SystemState system_mode = SYSTEM_RUN;
-int sound_threshold = 800;
 int sound_threshold_display = 800;
 long long fnd_update_timestamp = 0;
 long long led_indicator_toggle_timestamp = 0;
@@ -64,6 +63,7 @@ long long clap_end_timestamp = 0;
 void clap_state_machine()
 {
     int sound_value_realtime = adc_read(ADC_CHANNEL_SOUND);
+    int sound_threshold = system_get_attribute(SOUND_THRESHOLD);
 
     switch (clap_state)
     {
@@ -193,6 +193,7 @@ void lamp_state_machine()
 void system_state_machine()
 {
     enum KnobTurnDirection turn_direction = knob_check();
+    int sound_threshold;
 
     switch (system_mode)
     {
@@ -209,6 +210,8 @@ void system_state_machine()
         break;
 
     case SYSTEM_SET:
+        sound_threshold = system_get_attribute(SOUND_THRESHOLD);
+
         led_accumulate_print(sound_threshold_display, system_get_attribute(SOUND_THRESHOLD_MIN), system_get_attribute(SOUND_THRESHOLD_MAX));
 
         fnd_set_print_value(sound_threshold_display);
@@ -228,17 +231,22 @@ void system_state_machine()
             system_mode = SYSTEM_RUN;
         }
 
-        if (turn_direction == CLOCKWISE)
+        if (turn_direction != NONE)
         {
-            threshold_update_timestamp = timer_get_time();
+            if (turn_direction == CLOCKWISE)
+            {
+                threshold_update_timestamp = timer_get_time();
 
-            sound_threshold = clamp(sound_threshold + system_get_attribute(SOUND_THRESHOLD_ADJUST_AMOUNT), system_get_attribute(SOUND_THRESHOLD_MIN), system_get_attribute(SOUND_THRESHOLD_MAX));
-        }
-        else if (turn_direction == COUNTERCLOCKWISE)
-        {
-            threshold_update_timestamp = timer_get_time();
+                system_set_attribute(SOUND_THRESHOLD,
+                                     clamp(sound_threshold + system_get_attribute(SOUND_THRESHOLD_ADJUST_AMOUNT), system_get_attribute(SOUND_THRESHOLD_MIN), system_get_attribute(SOUND_THRESHOLD_MAX)));
+            }
+            else if (turn_direction == COUNTERCLOCKWISE)
+            {
+                threshold_update_timestamp = timer_get_time();
 
-            sound_threshold = clamp(sound_threshold - system_get_attribute(SOUND_THRESHOLD_ADJUST_AMOUNT), system_get_attribute(SOUND_THRESHOLD_MIN), system_get_attribute(SOUND_THRESHOLD_MAX));
+                system_set_attribute(SOUND_THRESHOLD,
+                                     clamp(sound_threshold - system_get_attribute(SOUND_THRESHOLD_ADJUST_AMOUNT), system_get_attribute(SOUND_THRESHOLD_MIN), system_get_attribute(SOUND_THRESHOLD_MAX)));
+            }
         }
 
         break;
