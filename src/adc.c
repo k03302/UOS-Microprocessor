@@ -1,9 +1,14 @@
 #include "common.h"
 #include "adc.h"
 
+static enum AdcChannel current_channel;
+
 void adc_init(enum AdcChannel channel)
 {
     ADMUX = 0x00;
+
+    current_channel = channel;
+
     switch (channel)
     {
     case ADC_CHANNEL_CDS:
@@ -17,8 +22,10 @@ void adc_init(enum AdcChannel channel)
     ADCSRA = (1 << ADEN) | (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0);
 }
 
-int adc_read()
+int adc_read(enum AdcChannel channel)
 {
+    assert(channel == current_channel);
+
     ADCSRA |= (1 << ADSC);
     while ((ADCSRA & (1 << ADIF)) == 0)
         ;
