@@ -1,8 +1,9 @@
-#include "lamp_sm.h"
-#include "clap_sm.h"
+#include "state_machines/lamp_sm.h"
+#include "state_machines/clap_sm.h"
 #include "system_config.h"
-#include "adc_ctrl.h"
-#include "rgbled.h"
+#include "peripherals/adc_ctrl.h"
+#include "peripherals/rgbled.h"
+#include "peripherals/timer.h"
 #include "common.h"
 
 // 램프 상태

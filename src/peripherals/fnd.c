@@ -1,4 +1,5 @@
-#include "fnd.h"
+#include "peripherals/fnd.h"
+#include "peripherals/timer.h"
 #include "common.h"
 #include "system_config.h"
 #define FND_DIGIT_COUNT 4 // FND의 digit 개수

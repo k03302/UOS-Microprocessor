@@ -1,8 +1,8 @@
-#include "clap_sm.h"
+#include "state_machines/clap_sm.h"
 #include "common.h"
 #include "system_config.h"
-#include "adc_ctrl.h"
-#include "led.h"
+#include "peripherals/adc_ctrl.h"
+#include "peripherals/led.h"
 
 // 박수의 시작과 끝 타임스탬프를 저장
 static long long start_timestamp = 0;

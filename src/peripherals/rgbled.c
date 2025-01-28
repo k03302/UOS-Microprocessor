@@ -1,4 +1,4 @@
-#include "rgbled.h"
+#include "peripherals/rgbled.h"
 #include "common.h"
 
 void rgb_led_init()

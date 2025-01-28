@@ -1,5 +1,5 @@
+#include "peripherals/knob.h"
 #include "common.h"
-#include "knob.h"
 
 void knob_init(void)
 {

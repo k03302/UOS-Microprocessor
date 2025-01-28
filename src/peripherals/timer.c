@@ -1,7 +1,5 @@
-#include <avr/io.h>
-#include <avr/interrupt.h>
-#include <assert.h>
-#include "timer.h"
+#include "peripherals/timer.h"
+#include "common.h"
 
 #define TIMER_COUNT 10
 

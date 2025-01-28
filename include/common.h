@@ -6,7 +6,6 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 #include "pin_settings.h"
-#include "timer.h"
 #include "utils.h"
 
 typedef void (*StateFuncNoParam)(void);

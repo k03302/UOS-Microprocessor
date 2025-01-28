@@ -1,11 +1,12 @@
-#include "system_sm.h"
+#include "state_machines/system_sm.h"
 #include "common.h"
 #include "system_config.h"
-#include "knob.h"
-#include "lamp_sm.h"
-#include "led.h"
-#include "fnd.h"
-#include "adc_ctrl.h"
+#include "state_machines/lamp_sm.h"
+#include "peripherals/knob.h"
+#include "peripherals/led.h"
+#include "peripherals/fnd.h"
+#include "peripherals/adc_ctrl.h"
+#include "peripherals/timer.h"
 
 enum SystemState
 {

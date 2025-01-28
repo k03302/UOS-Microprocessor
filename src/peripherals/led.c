@@ -1,6 +1,5 @@
+#include "peripherals/led.h"
 #include "common.h"
-#include "led.h"
-#include <assert.h>
 
 void led_init(void)
 {

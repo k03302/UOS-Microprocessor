@@ -1,5 +1,5 @@
 #include "system_config.h"
-#include "system_sm.h"
+#include "state_machines/system_sm.h"
 
 int main()
 {
