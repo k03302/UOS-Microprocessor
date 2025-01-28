@@ -64,11 +64,8 @@ target_compile_definitions(${EXECUTABLE} PRIVATE
 # List of include directories
 target_include_directories(${EXECUTABLE} PRIVATE
   src 
-  src/ap
-  src/bsp
-  src/hw
-  src/common
-  src/common/hw/include
+  src/peripherals
+  src/state_machines
   ${TOOLCHAIN_INCLUDE}
   )
 
