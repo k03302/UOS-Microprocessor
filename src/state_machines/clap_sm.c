@@ -3,6 +3,7 @@
 #include "system_config.h"
 #include "peripherals/adc_ctrl.h"
 #include "peripherals/led.h"
+#include "peripherals/timer.h"
 
 // 박수의 시작과 끝 타임스탬프를 저장
 static long long start_timestamp = 0;
