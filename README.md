@@ -56,18 +56,18 @@ https://github.com/user-attachments/assets/2c43986f-2cbc-41b9-9489-d0dff180075a
 # Code
 ```
 ┌───────────────────────────────┐
-│      System State Machine     │
+│      System State Machine     │  // State machine that drives the entire system
 ├───────────────────────────────┤
-│        Lamp State Machine     │
+│        Lamp State Machine     │  // State machine that manages the on/off state of the mood lamp
 ├───────────────────────────────┤
-│        Clap State Machine     │
+│        Clap State Machine     │  // State machine that detects two consecutive claps
 ├───────────────────────────────┤
-│ Peripheral Control Programs   │
+│ Peripheral Control Programs   │  // Code that controls each peripheral device
 │ (FND, LED, Timer, etc.)       │
 ├──────────────────────┬────────┤
-│     Pin Settings     │ System │
+│     Pin Settings     │ System │  // Pin Settings: definitions of pin configuration for each peripheral on the ATmega128
 ├──────────────────────┤ Config │
-│    ATmega128 Lib     │        │
+│    ATmega128 Lib     │        │  // System Config: system-level configuration unrelated to pin settings
 └──────────────────────┴────────┘
 ```
 
