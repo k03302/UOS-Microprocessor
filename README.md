@@ -62,7 +62,7 @@ https://github.com/user-attachments/assets/2c43986f-2cbc-41b9-9489-d0dff180075a
 ├───────────────────────────────┤
 │        Clap State Machine     │
 ├───────────────────────────────┤
-│ Parapellal Control Programs   │
+│ Peripheral Control Programs   │
 │ (FND, LED, Timer, etc.)       │
 ├──────────────────────┬────────┤
 │     Pin Settings     │ System │
