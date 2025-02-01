@@ -46,6 +46,7 @@ https://github.com/user-attachments/assets/2c43986f-2cbc-41b9-9489-d0dff180075a
         -DAVR_TOOLCHAIN_DIR=${Fill in path to the folder containing AVR-GCC bin folder}\
         -DCMAKE_MAKE_PROGRAM=${Fill in path to make.exe}\
         ..
+    cmake --build .
     ```
 
 5. Upload the executable to your machine using avrdude
@@ -55,13 +56,6 @@ https://github.com/user-attachments/assets/2c43986f-2cbc-41b9-9489-d0dff180075a
 
 # Code
 ```
-
-  // State machine that drives the entire system
-
-  // State machine that manages the on/off state of the mood lamp
-
-  // State machine that detects two consecutive claps
-
 ┌──────────────────────┬────────┐  // System SM: State machine that configures system
 │      Sensor SM       │ System │  // Sensor SM: State machine that reads sensor data from adc
 ├──────────┬───────────┤   SM   │  // Day SM: State machine that represents whether it is day or night
