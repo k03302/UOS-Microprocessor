@@ -23,11 +23,12 @@ enum SystemAttribute
     SA_CDS_DAY_THRESHOLD,   // 낮으로 전환하는 조도 역치
     SA_CDS_CHECK_PERIOD,    // 조도를 감지하는 주기 (msec)
 
-    SA_CLAP_MIN_DURATION, // 박수 스파이크 지속시간 최소 (msec)
-    SA_CLAP_MAX_DURATION, // 박수 스파이크 지속시간 최대 (msec)
-    SA_CLAP_MIN_GAP,      // 박수 간격 최소 (msec)
-    SA_CLAP_MAX_GAP,      // 박수 간격 최대 (msec)
-    SA_CLAP_TOGGLE_WAIT,  // SET모드를 끝내기 위한 대기시간 (msec)
+    SA_CLAP_MIN_DURATION,  // 박수 스파이크 지속시간 최소 (msec)
+    SA_CLAP_MAX_DURATION,  // 박수 스파이크 지속시간 최대 (msec)
+    SA_CLAP_MIN_GAP,       // 박수 간격 최소 (msec)
+    SA_CLAP_MAX_GAP,       // 박수 간격 최대 (msec)
+    SA_CLAP_TOGGLE_WAIT,   // SET모드를 끝내기 위한 대기시간 (msec)
+    SA_CLAP_CALMDOWN_WAIT, // 박수 스파이크 2회 후 필요한 대기시간 (msec)
 
     SA_FND_NEXT_DIGIT_PERIOD, // FND에 다음 digit을 출력하는 주기 (msec)
     SA_FND_UPDATE_PERIOD,     // FND에 출력할 수치를 업데이트하는 주기 (msec)

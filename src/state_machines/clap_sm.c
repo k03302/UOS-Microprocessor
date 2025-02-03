@@ -2,8 +2,8 @@
 #include "common.h"
 #include "system_config.h"
 #include "peripherals/adc_ctrl.h"
-#include "peripherals/led.h"
 #include "peripherals/timer.h"
+#include "utils/watch.h"
 
 // 박수의 시작과 끝 타임스탬프를 저장
 static long long start_timestamp = 0;
@@ -12,32 +12,37 @@ static long long end_timestamp = 0;
 // 박수 상태
 enum ClapState
 {
-    CLAP_START,         // 대기 상태
+    CLAP_START,         // 초기 상태
     CLAP_FIRST_TOP,     // 첫 번째로 소리가 역치 초과
     CLAP_FIRST_BOTTOM,  // 첫 번째로 역치 미만으로 하강
     CLAP_SECOND_TOP,    // 두 번째로 소리가 역치 초과
     CLAP_SECOND_BOTTOM, // 두 번째로 역치 미만으로 하강
+    CLAP_END,           // 박수가 인식된 종료 상태
     CLAP_STATE_COUNT    // 상태 개수
 };
 
 static enum ClapState current_state = CLAP_START;
+
+static struct watch clap_clamdown_watch;
 
 // 상태 함수
 static void state_start(void);
 static void state_top_common(void);
 static void state_first_bottom(void);
 static void state_second_bottom(void);
+static void state_end(void);
 
 static StateFuncNoParam state_table[CLAP_STATE_COUNT] = {
     state_start,
     state_top_common,
     state_first_bottom,
     state_top_common,
-    state_second_bottom};
+    state_second_bottom,
+    state_end};
 
 int clap_state_machine_finished(void)
 {
-    return current_state == CLAP_SECOND_BOTTOM;
+    return current_state == CLAP_END;
 }
 
 void clap_state_machine_initialize(void)
@@ -45,6 +50,8 @@ void clap_state_machine_initialize(void)
     current_state = CLAP_START;
     start_timestamp = 0;
     end_timestamp = 0;
+
+    watch_init(&clap_clamdown_watch, system_get_attribute(SA_CLAP_CALMDOWN_WAIT));
 }
 
 void clap_state_machine(void)
@@ -53,7 +60,7 @@ void clap_state_machine(void)
     state_table[current_state]();
 }
 
-// STATE_START 상태 함수
+// CLAP_START 상태 함수
 static void state_start(void)
 {
     assert(current_state == CLAP_START);
@@ -68,7 +75,7 @@ static void state_start(void)
     }
 }
 
-// STATE_FIRST_TOP, STATE_SECOND_TOP 상태 함수
+// CLAP_FIRST_TOP, CLAP_SECOND_TOP 상태 함수
 static void state_top_common(void)
 {
     assert(current_state == CLAP_FIRST_TOP || current_state == CLAP_SECOND_TOP);
@@ -90,15 +97,23 @@ static void state_top_common(void)
             // 박수 스파이크가 너무 길게 지속됨. 박수 아님 판정. 시작 상태로 복귀
             current_state = CLAP_START;
         }
+        // 정상적인 박수 스파이크 인식
         else
         {
-            // 정상적인 박수 스파이크 인식
-            current_state = (current_state == CLAP_FIRST_TOP) ? CLAP_FIRST_BOTTOM : CLAP_SECOND_BOTTOM;
+            if (current_state == CLAP_FIRST_TOP)
+            {
+                current_state = CLAP_FIRST_BOTTOM;
+            }
+            else
+            {
+                current_state = CLAP_SECOND_BOTTOM;
+                watch_update(&clap_clamdown_watch);
+            }
         }
     }
 }
 
-// STATE_FIRST_BOTTOM 상태 함수
+// CLAP_FIRST_BOTTOM 상태 함수
 static void state_first_bottom(void)
 {
     assert(current_state == CLAP_FIRST_BOTTOM);
@@ -128,9 +143,19 @@ static void state_first_bottom(void)
     }
 }
 
-// STATE_SECOND_BOTTOM 상태 함수
+// CLAP_SECOND_BOTTOM 상태 함수
 static void state_second_bottom(void)
 {
     assert(current_state == CLAP_SECOND_BOTTOM);
-    led_clear();
+
+    if (watch_check(&clap_clamdown_watch))
+    {
+        current_state = CLAP_END;
+    }
+}
+
+// CLAP_END 상태 함수
+static void state_end(void)
+{
+    assert(current_state == CLAP_END);
 }

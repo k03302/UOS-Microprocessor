@@ -14,6 +14,7 @@ void system_init_config()
     system_attributes[SA_CLAP_MIN_GAP] = 200;
     system_attributes[SA_CLAP_MAX_GAP] = 1000;
     system_attributes[SA_CLAP_TOGGLE_WAIT] = 1000;
+    system_attributes[SA_CLAP_CALMDOWN_WAIT] = 500;
     system_attributes[SA_FND_NEXT_DIGIT_PERIOD] = 1;
     system_attributes[SA_FND_UPDATE_PERIOD] = 100;
     system_attributes[SA_FND_UPDATE_TIMEOUT] = 2000;
