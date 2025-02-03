@@ -3,7 +3,7 @@
 #include "state_machines/day_sm.h"
 #include "system_config.h"
 #include "peripherals/adc_ctrl.h"
-#include "peripherals/rgbled.h"
+#include "peripherals/moodlight.h"
 #include "peripherals/timer.h"
 #include "peripherals/led.h"
 #include "utils/watch.h"
@@ -46,7 +46,7 @@ void lamp_state_machine_initialize()
 
     adc_init(ADC_CHANNEL_CDS);
     led_init();
-    rgb_led_init();
+    moodlight_init();
     clap_state_machine_initialize();
     day_state_machine_initialize();
 }
@@ -101,7 +101,7 @@ static void lamp_check_sound(void)
     if (clap_state_machine_finished())
     {
         clap_state_machine_initialize();
-        rgb_led_toggle();
+        moodlight_toggle();
 
         watch_update(&adc_change_watch);
         adc_init(ADC_CHANNEL_CDS);
@@ -132,11 +132,11 @@ static void lamp_check_light(void)
 // day_state_machine에서 day->night 전환 시 호출되는 콜백 구현
 void day_sm_day2night_callback(void)
 {
-    rgb_led_set(1);
+    moodlight_set(1);
 }
 
 // day_state_machine에서 night->day 전환 시 호출되는 콜백 구현
 void day_sm_night2day_callback(void)
 {
-    rgb_led_set(0);
+    moodlight_set(0);
 }

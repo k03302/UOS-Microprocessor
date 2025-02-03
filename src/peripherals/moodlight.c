@@ -1,13 +1,13 @@
-#include "peripherals/rgbled.h"
+#include "peripherals/moodlight.h"
 #include "common.h"
 
-void rgb_led_init()
+void moodlight_init()
 {
     RGB_LED_DDR = RGB_LED_ALL_BITS;
-    rgb_led_set(0);
+    moodlight_set(0);
 }
 
-void rgb_led_set(int turn_on)
+void moodlight_set(int turn_on)
 {
     if (turn_on)
     {
@@ -19,7 +19,7 @@ void rgb_led_set(int turn_on)
     }
 }
 
-void rgb_led_toggle()
+void moodlight_toggle()
 {
     RGB_LED_BASE ^= RGB_LED_ALL_BITS;
 }

@@ -5,7 +5,7 @@
     @brief
     RGB LED 초기화 함수
 */
-void rgb_led_init(void);
+void moodlight_init(void);
 
 /*
     @brief
@@ -13,12 +13,12 @@ void rgb_led_init(void);
 
     @param turn_on 1: 켜기, 0: 끄기
 */
-void rgb_led_set(int turn_on);
+void moodlight_set(int turn_on);
 
 /*
     @brief
     RGB LED 상태 토글
 */
-void rgb_led_toggle();
+void moodlight_toggle();
 
 #endif
