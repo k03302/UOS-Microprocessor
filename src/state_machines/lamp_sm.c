@@ -5,6 +5,7 @@
 #include "peripherals/rgbled.h"
 #include "peripherals/timer.h"
 #include "peripherals/led.h"
+#include "utils/watch.h"
 #include "common.h"
 
 // 램프 상태
@@ -46,9 +47,9 @@ void lamp_state_machine_initialize()
     initialize_done = 1;
     lamp_mode = LAMP_DAY;
 
-    timer_get_watch(&adc_change_watch, system_get_attribute(SA_ADC_CHANGE_TIMEOUT));
-    timer_get_watch(&cds_check_watch, system_get_attribute(SA_CDS_CHECK_PERIOD));
-    timer_get_watch(&clap_toggle_watch, system_get_attribute(SA_CLAP_TOGGLE_WAIT));
+    watch_init(&adc_change_watch, system_get_attribute(SA_ADC_CHANGE_TIMEOUT));
+    watch_init(&cds_check_watch, system_get_attribute(SA_CDS_CHECK_PERIOD));
+    watch_init(&clap_toggle_watch, system_get_attribute(SA_CLAP_TOGGLE_WAIT));
 
     adc_init(ADC_CHANNEL_CDS);
     led_init();
@@ -93,7 +94,7 @@ static void state_night(void)
     }
     else
     {
-        timer_update_watch(&cds_check_watch);
+        watch_update(&cds_check_watch);
         adc_init(ADC_CHANNEL_SOUND);
         lamp_mode = LAMP_ADC_CHANGE_SOUND;
     }
@@ -107,7 +108,7 @@ static void state_night(void)
 */
 static void state_adc_change_sound(void)
 {
-    if (timer_check_update_watch(&adc_change_watch))
+    if (watch_check_update(&adc_change_watch))
     {
         lamp_mode = LAMP_CHECK_SOUND;
     }
@@ -121,7 +122,7 @@ static void state_adc_change_sound(void)
 */
 static void state_adc_change_light(void)
 {
-    if (timer_check_update_watch(&adc_change_watch))
+    if (watch_check_update(&adc_change_watch))
     {
         lamp_mode = LAMP_NIGHT;
     }
@@ -135,7 +136,7 @@ static void state_adc_change_light(void)
 */
 static void state_wait(void)
 {
-    if (timer_check_watch(&clap_toggle_watch))
+    if (watch_check(&clap_toggle_watch))
     {
         lamp_mode = LAMP_CHECK_SOUND;
     }
@@ -149,9 +150,9 @@ static void state_wait(void)
 static void state_check_sound(void)
 {
     clap_state_machine();
-    if (timer_check_watch(&cds_check_watch))
+    if (watch_check(&cds_check_watch))
     {
-        timer_update_watch(&adc_change_watch);
+        watch_update(&adc_change_watch);
         adc_init(ADC_CHANNEL_CDS);
         lamp_mode = LAMP_ADC_CHANGE_LIGHT;
     }
@@ -161,6 +162,6 @@ static void state_check_sound(void)
         rgb_led_toggle();
 
         lamp_mode = LAMP_WAIT;
-        timer_update_watch(&clap_toggle_watch);
+        watch_update(&clap_toggle_watch);
     }
 }

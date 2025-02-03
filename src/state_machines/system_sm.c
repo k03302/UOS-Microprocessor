@@ -5,6 +5,7 @@
 #include "peripherals/fnd.h"
 #include "peripherals/adc_ctrl.h"
 #include "peripherals/timer.h"
+#include "utils/watch.h"
 
 enum SystemState
 {
@@ -22,8 +23,8 @@ void system_state_machine_initialize()
 {
     system_mode = SYSTEM_RUN;
 
-    timer_get_watch(&fnd_update_watch, system_get_attribute(SA_FND_UPDATE_PERIOD));
-    timer_get_watch(&threshold_update_watch, system_get_attribute(SA_FND_UPDATE_TIMEOUT));
+    watch_init(&fnd_update_watch, system_get_attribute(SA_FND_UPDATE_PERIOD));
+    watch_init(&threshold_update_watch, system_get_attribute(SA_FND_UPDATE_TIMEOUT));
 
     timer_init();
     // led_init();
@@ -53,8 +54,8 @@ void system_state_machine()
             system_mode = SYSTEM_SET;
 
             fnd_start();
-            timer_update_watch(&threshold_update_watch);
-            timer_update_watch(&fnd_update_watch);
+            watch_update(&threshold_update_watch);
+            watch_update(&fnd_update_watch);
         }
         break;
 
@@ -66,13 +67,13 @@ void system_state_machine()
         fnd_set_print_value(sound_threshold_display);
 
         // fnd에 포시할 숫자를 일정 주기마다 업데이트
-        if (timer_check_update_watch(&fnd_update_watch))
+        if (watch_check_update(&fnd_update_watch))
         {
             sound_threshold_display = sound_threshold;
         }
 
         // 역치 조절을 한 후 시간이 경과했을 때 SYSTEM_RUN으로 변경
-        if (timer_check_watch(&threshold_update_watch))
+        if (watch_check(&threshold_update_watch))
         {
             fnd_end();
             // led_clear();
@@ -83,7 +84,7 @@ void system_state_machine()
         // knob이 돌려졌을 때 역치 조절
         if (turn_direction != KNOB_NONE)
         {
-            timer_update_watch(&threshold_update_watch);
+            watch_update(&threshold_update_watch);
             adjust_amount = system_get_attribute(SA_SOUND_THRESHOLD_ADJUST_AMOUNT);
             if (turn_direction == KNOB_CLOCKWISE)
             {
