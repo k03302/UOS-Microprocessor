@@ -20,14 +20,14 @@ int watch_check(struct watch *w)
     return 0; // 시간이 경과하지 않음
 }
 
-void watch_update(struct watch *w)
+void watch_start(struct watch *w)
 {
     assert(w != (void *)0);
 
     w->start_timestamp = timer_get_tick();
 }
 
-int watch_check_update(struct watch *w)
+int watch_check_restart(struct watch *w)
 {
     assert(w != (void *)0);
 

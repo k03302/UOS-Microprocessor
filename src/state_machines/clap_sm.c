@@ -108,7 +108,7 @@ static void clap_top_common(void)
             else
             {
                 current_state = CLAP_SECOND_BOTTOM;
-                watch_update(&clap_clamdown_watch);
+                watch_start(&clap_clamdown_watch);
             }
         }
     }

@@ -67,7 +67,7 @@ static void lamp_adc_change_sound(void)
 {
     if (watch_check(&adc_change_watch))
     {
-        watch_update(&sound_check_watch);
+        watch_start(&sound_check_watch);
         lamp_mode = LAMP_CHECK_SOUND;
     }
 }
@@ -103,13 +103,13 @@ static void lamp_check_sound(void)
         clap_state_machine_initialize();
         moodlight_toggle();
 
-        watch_update(&adc_change_watch);
+        watch_start(&adc_change_watch);
         adc_init(ADC_CHANNEL_CDS);
         lamp_mode = LAMP_ADC_CHANGE_LIGHT;
     }
     else if (watch_check(&sound_check_watch))
     {
-        watch_update(&adc_change_watch);
+        watch_start(&adc_change_watch);
         adc_init(ADC_CHANNEL_CDS);
         lamp_mode = LAMP_ADC_CHANGE_LIGHT;
     }
@@ -125,7 +125,7 @@ static void lamp_check_light(void)
     day_state_machine(light_value_realtime);
 
     adc_init(ADC_CHANNEL_SOUND);
-    watch_update(&adc_change_watch);
+    watch_start(&adc_change_watch);
     lamp_mode = LAMP_ADC_CHANGE_SOUND;
 }
 

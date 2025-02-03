@@ -53,8 +53,8 @@ void system_state_machine()
             system_mode = SYSTEM_SET;
 
             fnd_start();
-            watch_update(&threshold_update_watch);
-            watch_update(&fnd_update_watch);
+            watch_start(&threshold_update_watch);
+            watch_start(&fnd_update_watch);
         }
         break;
 
@@ -66,7 +66,7 @@ void system_state_machine()
         fnd_set_print_value(sound_threshold_display);
 
         // fnd에 포시할 숫자를 일정 주기마다 업데이트
-        if (watch_check_update(&fnd_update_watch))
+        if (watch_check_restart(&fnd_update_watch))
         {
             sound_threshold_display = sound_threshold;
         }
@@ -83,7 +83,7 @@ void system_state_machine()
         // knob이 돌려졌을 때 역치 조절
         if (turn_direction != KNOB_NONE)
         {
-            watch_update(&threshold_update_watch);
+            watch_start(&threshold_update_watch);
             adjust_amount = system_get_attribute(SA_SOUND_THRESHOLD_ADJUST_AMOUNT);
             if (turn_direction == KNOB_CLOCKWISE)
             {

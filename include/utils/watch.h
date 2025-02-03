@@ -26,13 +26,13 @@ int watch_check(struct watch *w);
     @brief
     start_timestamp를 현재 시간으로 갱신
 */
-void watch_update(struct watch *w);
+void watch_start(struct watch *w);
 
 /*
     @brief
     wait_time만큼 시간이 경과했는지 확인
     경과했으면 start_timestamp를 현재 시간으로 갱신
 */
-int watch_check_update(struct watch *w);
+int watch_check_restart(struct watch *w);
 
 #endif
