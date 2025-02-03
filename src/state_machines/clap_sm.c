@@ -28,19 +28,19 @@ static int threshold = 0;
 static struct watch clap_clamdown_watch;
 
 // 상태 함수
-static void state_start(void);
-static void state_top_common(void);
-static void state_first_bottom(void);
-static void state_second_bottom(void);
-static void state_end(void);
+static void clap_start(void);
+static void clap_top_common(void); // CLAP_FIRST_TOP, CLAP_SECOND_TOP에서 상태함수 재사용
+static void clap_first_bottom(void);
+static void clap_second_bottom(void);
+static void clap_end(void);
 
 static StateFuncNoParam state_table[CLAP_STATE_COUNT] = {
-    state_start,
-    state_top_common,
-    state_first_bottom,
-    state_top_common,
-    state_second_bottom,
-    state_end};
+    clap_start,
+    clap_top_common,
+    clap_first_bottom,
+    clap_top_common,
+    clap_second_bottom,
+    clap_end};
 
 int clap_state_machine_finished(void)
 {
@@ -66,7 +66,7 @@ void clap_state_machine(int sound_value_realtime)
 }
 
 // CLAP_START 상태 함수
-static void state_start(void)
+static void clap_start(void)
 {
     assert(current_state == CLAP_START);
 
@@ -79,7 +79,7 @@ static void state_start(void)
 }
 
 // CLAP_FIRST_TOP, CLAP_SECOND_TOP 상태 함수
-static void state_top_common(void)
+static void clap_top_common(void)
 {
     assert(current_state == CLAP_FIRST_TOP || current_state == CLAP_SECOND_TOP);
 
@@ -115,7 +115,7 @@ static void state_top_common(void)
 }
 
 // CLAP_FIRST_BOTTOM 상태 함수
-static void state_first_bottom(void)
+static void clap_first_bottom(void)
 {
     assert(current_state == CLAP_FIRST_BOTTOM);
 
@@ -143,7 +143,7 @@ static void state_first_bottom(void)
 }
 
 // CLAP_SECOND_BOTTOM 상태 함수
-static void state_second_bottom(void)
+static void clap_second_bottom(void)
 {
     assert(current_state == CLAP_SECOND_BOTTOM);
 
@@ -154,7 +154,7 @@ static void state_second_bottom(void)
 }
 
 // CLAP_END 상태 함수
-static void state_end(void)
+static void clap_end(void)
 {
     assert(current_state == CLAP_END);
 }

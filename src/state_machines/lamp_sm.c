@@ -25,16 +25,16 @@ static struct watch sound_check_watch;
 static int initialize_done = 0; // 초기화 함수를 호출했는지 여부
 
 // 상태 함수
-static void state_check_light(void);
-static void state_check_sound(void);
-static void state_adc_change_sound(void);
-static void state_adc_change_light(void);
+static void lamp_check_light(void);
+static void lamp_check_sound(void);
+static void lamp_adc_change_sound(void);
+static void lamp_adc_change_light(void);
 
 static StateFuncNoParam state_table[LAMP_STATE_COUNT] = {
-    state_check_light,
-    state_check_sound,
-    state_adc_change_sound,
-    state_adc_change_light};
+    lamp_check_light,
+    lamp_check_sound,
+    lamp_adc_change_sound,
+    lamp_adc_change_light};
 
 void lamp_state_machine_initialize()
 {
@@ -63,7 +63,7 @@ void lamp_state_machine()
     잠시 대기 후 LAMP_CHECK_SOUND 상태로 전환
     ADC 채널 변경 후 안정화 시간 확보
 */
-static void state_adc_change_sound(void)
+static void lamp_adc_change_sound(void)
 {
     if (watch_check(&adc_change_watch))
     {
@@ -78,7 +78,7 @@ static void state_adc_change_sound(void)
     잠시 대기 후 LAMP_CHECK_LIGHT 상태로 전환
     ADC 채널 변경 후 안정화 시간 확보
 */
-static void state_adc_change_light(void)
+static void lamp_adc_change_light(void)
 {
     if (watch_check(&adc_change_watch))
     {
@@ -93,7 +93,7 @@ static void state_adc_change_light(void)
     박수 인식 시 rgb led를 토글 및 빛 감지 시작
     또는 일정 시간 경과 시 빛 감지 시작
 */
-static void state_check_sound(void)
+static void lamp_check_sound(void)
 {
     int sound_value_realtime = adc_read(ADC_CHANNEL_SOUND);
     clap_state_machine(sound_value_realtime);
@@ -119,7 +119,7 @@ static void state_check_sound(void)
     @brief
     LAMP_CHECK_LIGHT 상태 함수
 */
-static void state_check_light(void)
+static void lamp_check_light(void)
 {
     int light_value_realtime = adc_read(ADC_CHANNEL_CDS);
     day_state_machine(light_value_realtime);
