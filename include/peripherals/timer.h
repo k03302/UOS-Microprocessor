@@ -20,7 +20,7 @@ typedef struct TimerEvent
     @brief
     타임스탬프 반환 (msec)
 */
-unsigned long long timer_get_time(void);
+unsigned long long timer_get_tick(void);
 
 /*
     @brief

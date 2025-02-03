@@ -63,7 +63,7 @@ static void state_start(void)
     // 소리가 역치 초과
     if (sound_value > threshold)
     {
-        start_timestamp = timer_get_time();
+        start_timestamp = timer_get_tick();
         current_state = CLAP_FIRST_TOP;
     }
 }
@@ -78,7 +78,7 @@ static void state_top_common(void)
     // 소리가 역치 미만으로 하강
     if (sound_value < threshold)
     {
-        end_timestamp = timer_get_time();
+        end_timestamp = timer_get_tick();
         int duration = end_timestamp - start_timestamp;
 
         if (duration < system_get_attribute(SA_CLAP_MIN_DURATION))
@@ -108,7 +108,7 @@ static void state_first_bottom(void)
     // 소리가 역치 초과
     if (sound_value > threshold)
     {
-        start_timestamp = timer_get_time();
+        start_timestamp = timer_get_tick();
         int gap = start_timestamp - end_timestamp;
 
         if (gap < system_get_attribute(SA_CLAP_MIN_GAP))

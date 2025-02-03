@@ -22,7 +22,7 @@ void timer_init(void)
     TIMSK |= (1 << OCIE1A);
 }
 
-unsigned long long timer_get_time(void)
+unsigned long long timer_get_tick(void)
 {
     return tick;
 }
