@@ -4,6 +4,7 @@
 #include "peripherals/adc_ctrl.h"
 #include "peripherals/rgbled.h"
 #include "peripherals/timer.h"
+#include "peripherals/led.h"
 #include "common.h"
 
 // 램프 상태
@@ -50,6 +51,7 @@ void lamp_state_machine_initialize()
     timer_get_watch(&clap_toggle_watch, system_get_attribute(SA_CLAP_TOGGLE_WAIT));
 
     adc_init(ADC_CHANNEL_CDS);
+    led_init();
     rgb_led_init();
     clap_state_machine_initialize();
 }

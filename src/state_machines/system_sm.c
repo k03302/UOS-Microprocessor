@@ -1,9 +1,7 @@
 #include "state_machines/system_sm.h"
 #include "common.h"
 #include "system_config.h"
-#include "state_machines/lamp_sm.h"
 #include "peripherals/knob.h"
-#include "peripherals/led.h"
 #include "peripherals/fnd.h"
 #include "peripherals/adc_ctrl.h"
 #include "peripherals/timer.h"
@@ -28,13 +26,12 @@ void system_state_machine_initialize()
     timer_get_watch(&threshold_update_watch, system_get_attribute(SA_FND_UPDATE_TIMEOUT));
 
     timer_init();
-    led_init();
+    // led_init();
     fnd_init();
     knob_init();
     sei();
 
     system_init_config();
-    lamp_state_machine_initialize();
 
     sound_threshold_display = system_get_attribute(SA_SOUND_THRESHOLD);
     initialize_done = 1;
@@ -50,7 +47,6 @@ void system_state_machine()
     switch (system_mode)
     {
     case SYSTEM_RUN:
-        lamp_state_machine();
 
         if (turn_direction != KNOB_NONE)
         {
@@ -64,7 +60,7 @@ void system_state_machine()
     case SYSTEM_SET:
         sound_threshold = system_get_attribute(SA_SOUND_THRESHOLD);
 
-        led_accumulate_print(sound_threshold_display, system_get_attribute(SA_SOUND_THRESHOLD_MIN), system_get_attribute(SA_SOUND_THRESHOLD_MAX));
+        // led_accumulate_print(sound_threshold_display, system_get_attribute(SA_SOUND_THRESHOLD_MIN), system_get_attribute(SA_SOUND_THRESHOLD_MAX));
 
         fnd_set_print_value(sound_threshold_display);
 
@@ -78,7 +74,7 @@ void system_state_machine()
         if (timer_check_watch(&threshold_update_watch))
         {
             fnd_clear();
-            led_clear();
+            // led_clear();
             system_mode = SYSTEM_RUN;
             break;
         }
