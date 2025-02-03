@@ -2,7 +2,7 @@
 #include "state_machines/clap_sm.h"
 #include "state_machines/day_sm.h"
 #include "system_config.h"
-#include "peripherals/adc_ctrl.h"
+#include "peripherals/adc.h"
 #include "peripherals/moodlight.h"
 #include "peripherals/timer1.h"
 #include "peripherals/led8.h"

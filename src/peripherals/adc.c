@@ -1,4 +1,4 @@
-#include "peripherals/adc_ctrl.h"
+#include "peripherals/adc.h"
 #include "common.h"
 #include "peripherals/timer1.h"
 #include <assert.h>
