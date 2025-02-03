@@ -5,7 +5,7 @@
 #include "peripherals/adc_ctrl.h"
 #include "peripherals/moodlight.h"
 #include "peripherals/timer.h"
-#include "peripherals/led.h"
+#include "peripherals/led8.h"
 #include "utils/watch.h"
 #include "common.h"
 
@@ -45,7 +45,7 @@ void lamp_state_machine_initialize()
     watch_init(&sound_check_watch, system_get_attribute(SA_CDS_CHECK_PERIOD));
 
     adc_init(ADC_CHANNEL_CDS);
-    led_init();
+    led8_init();
     moodlight_init();
     clap_state_machine_initialize();
     day_state_machine_initialize();

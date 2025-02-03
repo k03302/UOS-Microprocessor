@@ -26,7 +26,7 @@ void system_state_machine_initialize()
     watch_init(&threshold_update_watch, system_get_attribute(SA_FND_UPDATE_TIMEOUT));
 
     timer_init();
-    // led_init();
+    // led8_init();
     fnd_init();
     knob_init();
     sei();
@@ -61,7 +61,7 @@ void system_state_machine()
     case SYSTEM_SET:
         sound_threshold = system_get_attribute(SA_SOUND_THRESHOLD);
 
-        // led_accumulate_print(sound_threshold_display, system_get_attribute(SA_SOUND_THRESHOLD_MIN), system_get_attribute(SA_SOUND_THRESHOLD_MAX));
+        // led8_accumulate_print(sound_threshold_display, system_get_attribute(SA_SOUND_THRESHOLD_MIN), system_get_attribute(SA_SOUND_THRESHOLD_MAX));
 
         fnd_set_print_value(sound_threshold_display);
 
@@ -75,7 +75,7 @@ void system_state_machine()
         if (watch_check(&threshold_update_watch))
         {
             fnd_end();
-            // led_clear();
+            // led8_clear();
             system_mode = SYSTEM_RUN;
             break;
         }

@@ -1,18 +1,18 @@
-#include "peripherals/led.h"
+#include "peripherals/led8.h"
 #include "common.h"
 
-void led_init(void)
+void led8_init(void)
 {
     LED_DDR = LED_ALL_BITS;
-    led_clear();
+    led8_clear();
 }
 
-void led_clear(void)
+void led8_clear(void)
 {
     LED_BASE = 0x00;
 }
 
-void led_accumulate_print(int value, int start, int end)
+void led8_accumulate_print(int value, int start, int end)
 {
     assert(start < end);
 
