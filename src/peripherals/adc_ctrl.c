@@ -1,6 +1,6 @@
 #include "peripherals/adc_ctrl.h"
 #include "common.h"
-#include "peripherals/timer.h"
+#include "peripherals/timer1.h"
 #include <assert.h>
 
 static enum AdcChannel current_channel;

@@ -3,7 +3,7 @@
 #include "system_config.h"
 #include "peripherals/knob.h"
 #include "peripherals/fnd.h"
-#include "peripherals/timer.h"
+#include "peripherals/timer1.h"
 #include "utils/watch.h"
 
 enum SystemState
@@ -25,7 +25,7 @@ void system_state_machine_initialize()
     watch_init(&fnd_update_watch, system_get_attribute(SA_FND_UPDATE_PERIOD));
     watch_init(&threshold_update_watch, system_get_attribute(SA_FND_UPDATE_TIMEOUT));
 
-    timer_init();
+    timer1_init();
     // led8_init();
     fnd_init();
     knob_init();

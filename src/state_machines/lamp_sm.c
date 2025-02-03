@@ -4,7 +4,7 @@
 #include "system_config.h"
 #include "peripherals/adc_ctrl.h"
 #include "peripherals/moodlight.h"
-#include "peripherals/timer.h"
+#include "peripherals/timer1.h"
 #include "peripherals/led8.h"
 #include "utils/watch.h"
 #include "common.h"

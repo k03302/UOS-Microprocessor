@@ -1,7 +1,7 @@
 #include "state_machines/clap_sm.h"
 #include "common.h"
 #include "system_config.h"
-#include "peripherals/timer.h"
+#include "peripherals/timer1.h"
 #include "utils/watch.h"
 
 // 박수의 시작과 끝 타임스탬프를 저장
@@ -73,7 +73,7 @@ static void clap_start(void)
     // 소리가 역치 초과
     if (current_sound_value > threshold)
     {
-        start_timestamp = timer_get_tick();
+        start_timestamp = timer1_get_tick();
         current_state = CLAP_FIRST_TOP;
     }
 }
@@ -86,7 +86,7 @@ static void clap_top_common(void)
     // 소리가 역치 미만으로 하강
     if (current_sound_value < threshold)
     {
-        end_timestamp = timer_get_tick();
+        end_timestamp = timer1_get_tick();
         int duration = end_timestamp - start_timestamp;
 
         if (duration < system_get_attribute(SA_CLAP_MIN_DURATION))
@@ -122,7 +122,7 @@ static void clap_first_bottom(void)
     // 소리가 역치 초과
     if (current_sound_value > threshold)
     {
-        start_timestamp = timer_get_tick();
+        start_timestamp = timer1_get_tick();
         int gap = start_timestamp - end_timestamp;
 
         if (gap < system_get_attribute(SA_CLAP_MIN_GAP))

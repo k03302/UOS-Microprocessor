@@ -1,5 +1,5 @@
 #include "peripherals/fnd.h"
-#include "peripherals/timer.h"
+#include "peripherals/timer1.h"
 #include "common.h"
 #include "system_config.h"
 #define FND_DIGIT_COUNT 4 // FND의 digit 개수
@@ -50,12 +50,12 @@ void fnd_start()
     timer_event.is_periodic = 1;
     timer_event.timeout = system_get_attribute(SA_FND_UPDATE_PERIOD);
 
-    timer_register_handler(&timer_event);
+    timer1_register_handler(&timer_event);
 }
 
 void fnd_end(void)
 {
-    timer_unregister_handler(&timer_event);
+    timer1_unregister_handler(&timer_event);
     FND_DATA_BASE = 0x00;
     FND_SELECT_BASE = FND_SELECT_ALL_BITS;
 }

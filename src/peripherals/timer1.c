@@ -1,4 +1,4 @@
-#include "peripherals/timer.h"
+#include "peripherals/timer1.h"
 #include "common.h"
 
 static volatile unsigned long long tick = 0;
@@ -10,7 +10,7 @@ ISR(TIMER1_COMPA_vect)
     tick++;
 }
 
-void timer_init(void)
+void timer1_init(void)
 {
     // 타이머1을 CTC 모드로 동작시키고, 시스템 클럭을 64로 나눈 속도로 타이머가 증가하도록 설정
     TCCR1B |= (1 << WGM12) | (1 << CS11) | (1 << CS10);
@@ -22,12 +22,12 @@ void timer_init(void)
     TIMSK |= (1 << OCIE1A);
 }
 
-unsigned long long timer_get_tick(void)
+unsigned long long timer1_get_tick(void)
 {
     return tick;
 }
 
-void timer_create_event(struct TimerEvent *event, unsigned int timeout, int is_periodic, void (*callback)(void))
+void timer1_create_event(struct TimerEvent *event, unsigned int timeout, int is_periodic, void (*callback)(void))
 {
     if (event == NULL)
     {
@@ -38,7 +38,7 @@ void timer_create_event(struct TimerEvent *event, unsigned int timeout, int is_p
     event->callback = callback;
 }
 
-int timer_register_handler(TimerEvent *event)
+int timer1_register_handler(TimerEvent *event)
 {
     assert(event != NULL && event->callback != NULL);
     if (event->timeout == 0)
@@ -80,7 +80,7 @@ int timer_register_handler(TimerEvent *event)
     return 0;
 }
 
-void timer_unregister_handler(TimerEvent *event)
+void timer1_unregister_handler(TimerEvent *event)
 {
     assert(event != NULL);
 
@@ -107,7 +107,7 @@ void timer_unregister_handler(TimerEvent *event)
     }
 }
 
-void timer_process_due_events()
+void timer1_process_due_events()
 {
     TimerEvent *current = head;
     while (current != NULL && current->next_trigger_time <= tick)
@@ -121,7 +121,7 @@ void timer_process_due_events()
 
         if (current->is_periodic)
         {
-            timer_register_handler(current);
+            timer1_register_handler(current);
         }
 
         current = current->next;
