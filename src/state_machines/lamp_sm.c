@@ -1,5 +1,6 @@
 #include "state_machines/lamp_sm.h"
 #include "state_machines/clap_sm.h"
+#include "state_machines/day_sm.h"
 #include "system_config.h"
 #include "peripherals/adc_ctrl.h"
 #include "peripherals/rgbled.h"
@@ -47,6 +48,7 @@ void lamp_state_machine_initialize()
     led_init();
     rgb_led_init();
     clap_state_machine_initialize();
+    day_state_machine_initialize();
 }
 
 void lamp_state_machine()
@@ -120,16 +122,21 @@ static void state_check_sound(void)
 static void state_check_light(void)
 {
     int light_value_realtime = adc_read(ADC_CHANNEL_CDS);
-    if (light_value_realtime > system_get_attribute(SA_CDS_DAY_THRESHOLD))
-    {
-        rgb_led_set(1);
-    }
-    else
-    {
-        rgb_led_set(0);
-    }
+    day_state_machine(light_value_realtime);
 
     adc_init(ADC_CHANNEL_SOUND);
     watch_update(&adc_change_watch);
     lamp_mode = LAMP_ADC_CHANGE_SOUND;
+}
+
+// day_state_machine에서 day->night 전환 시 호출되는 콜백 구현
+void day_sm_day2night_callback(void)
+{
+    rgb_led_set(1);
+}
+
+// day_state_machine에서 night->day 전환 시 호출되는 콜백 구현
+void day_sm_night2day_callback(void)
+{
+    rgb_led_set(0);
 }
