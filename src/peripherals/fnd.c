@@ -11,6 +11,8 @@ static volatile unsigned char fnd_digit[10] = {
 static int print_value;
 static int current_digit_index = 0;
 
+static struct TimerEvent timer_event;
+
 /*
     @brief
     print_value의 current_digit_index번째 digit을 출력하는 함수
@@ -32,19 +34,28 @@ void fnd_init(void)
 {
     FND_DATA_DDR = FND_DATA_ALL_BITS;
     FND_SELECT_DDR = FND_SELECT_ALL_BITS;
-    fnd_clear();
+    FND_DATA_BASE = 0x00;
+    FND_SELECT_BASE = FND_SELECT_ALL_BITS;
 }
 
 void fnd_set_print_value(int value)
 {
     print_value = value;
     current_digit_index = 0;
-    timer_set_interval(system_get_attribute(SA_FND_UPDATE_PERIOD), fnd_print_current_digit);
 }
 
-void fnd_clear(void)
+void fnd_start()
 {
-    timer_clear_interval(fnd_print_current_digit);
+    timer_event.callback = fnd_print_current_digit;
+    timer_event.is_periodic = 1;
+    timer_event.timeout = system_get_attribute(SA_FND_UPDATE_PERIOD);
+
+    timer_register_handler(&timer_event);
+}
+
+void fnd_end(void)
+{
+    timer_unregister_handler(&timer_event);
     FND_DATA_BASE = 0x00;
     FND_SELECT_BASE = FND_SELECT_ALL_BITS;
 }

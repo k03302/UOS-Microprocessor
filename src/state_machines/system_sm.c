@@ -52,6 +52,7 @@ void system_state_machine()
         {
             system_mode = SYSTEM_SET;
 
+            fnd_start();
             timer_update_watch(&threshold_update_watch);
             timer_update_watch(&fnd_update_watch);
         }
@@ -73,7 +74,7 @@ void system_state_machine()
         // 역치 조절을 한 후 시간이 경과했을 때 SYSTEM_RUN으로 변경
         if (timer_check_watch(&threshold_update_watch))
         {
-            fnd_clear();
+            fnd_end();
             // led_clear();
             system_mode = SYSTEM_RUN;
             break;

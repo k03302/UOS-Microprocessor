@@ -9,15 +9,21 @@ void fnd_init(void);
 
 /*
     @brief
-    FND 출력 값을 설정하고 출력 시작
+    FND 출력 값을 설정
     @param value 출력할 값 (0~9999)
 */
 void fnd_set_print_value(int value);
 
 /*
     @brief
+    FND가 출력을 시작함
+*/
+void fnd_start();
+
+/*
+    @brief
     FND 출력을 취소하고 비움
 */
-void fnd_clear(void);
+void fnd_end(void);
 
 #endif
