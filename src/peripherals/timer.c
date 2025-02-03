@@ -1,40 +1,13 @@
 #include "peripherals/timer.h"
 #include "common.h"
 
-#define TIMER_COUNT 10
-
-struct TimerEvent
-{
-    unsigned long long interval;
-    unsigned long long next_trigger_time;
-    void (*callback)(void);
-    int is_interval; // 1 for interval, 0 for timeout
-    int is_active;   // 1 if the timer is active, 0 otherwise
-};
-
-static struct TimerEvent timer_events[TIMER_COUNT] = {0};
-
-static volatile long long timestamp = 0;
+static volatile unsigned long long tick = 0;
+TimerEvent *head = NULL;
 
 // 타이머 인터럽트 함수
 ISR(TIMER1_COMPA_vect)
 {
-    timestamp++;
-    for (int i = 0; i < TIMER_COUNT; i++)
-    {
-        if (timer_events[i].is_active && timestamp >= timer_events[i].next_trigger_time && timer_events[i].callback)
-        {
-            timer_events[i].callback();
-            if (timer_events[i].is_interval)
-            {
-                timer_events[i].next_trigger_time += timer_events[i].interval;
-            }
-            else
-            {
-                timer_events[i].is_active = 0; // timeout인 경우 비활성화
-            }
-        }
-    }
+    tick++;
 }
 
 void timer_get_watch(struct watch *w, unsigned int wait_time)
@@ -88,64 +61,106 @@ void timer_init(void)
 
 unsigned long long timer_get_time(void)
 {
-    return timestamp;
+    return tick;
 }
 
-int timer_set_timeout(unsigned long long interval, void (*callback)(void))
+void timer_create_event(struct TimerEvent *event, unsigned int timeout, int is_periodic, void (*callback)(void))
 {
-    if (interval == 0)
+    if (event == NULL)
     {
-        callback();
-        return 1;
+        return;
     }
+    event->timeout = timeout;
+    event->is_periodic = is_periodic;
+    event->callback = callback;
+}
 
-    int i;
-    for (i = 0; i < TIMER_COUNT; i++)
+int timer_register_handler(TimerEvent *event)
+{
+    assert(event != NULL && event->callback != NULL);
+    if (event->timeout == 0)
     {
-        if (!timer_events[i].is_active)
+        event->callback();
+        if (event->is_periodic == 0)
         {
-            timer_events[i].interval = interval;
-            timer_events[i].next_trigger_time = timestamp + interval;
-            timer_events[i].callback = callback;
-            timer_events[i].is_interval = 0; // timeout
-            timer_events[i].is_active = 1;
-            return 1; // 성공적으로 등록됨
+            return 0;
+        }
+        else
+        {
+            return -1; // periodic event with interval 0 is impossible. return error code
         }
     }
+
+    event->next_trigger_time = tick + event->timeout;
+    event->next = NULL;
+
+    if (head == NULL)
+    {
+        head = event;
+    }
+    else if (head->next_trigger_time >= event->next_trigger_time)
+    {
+        event->next = head;
+        head = event;
+    }
+    else
+    {
+        TimerEvent *current = head;
+        while (current->next != NULL && current->next->next_trigger_time < event->next_trigger_time)
+        {
+            current = current->next;
+        }
+        event->next = current->next;
+        current->next = event;
+    }
+
     return 0;
 }
 
-int timer_set_interval(unsigned long long interval, void (*callback)(void))
+void timer_unregister_handler(TimerEvent *event)
 {
-    if (interval == 0)
-    {
-        return 0;
-    }
+    assert(event != NULL);
 
-    int i;
-    for (i = 0; i < TIMER_COUNT; i++)
+    TimerEvent *current = head;
+    TimerEvent *prev = NULL;
+    while (current != NULL)
     {
-        if (!timer_events[i].is_active)
+        if (current == event)
         {
-            timer_events[i].interval = interval;
-            timer_events[i].next_trigger_time = timestamp + interval;
-            timer_events[i].callback = callback;
-            timer_events[i].is_interval = 1; // interval
-            timer_events[i].is_active = 1;
-            return 1; // 성공적으로 등록됨
+            if (prev == NULL)
+            {
+                head = current->next;
+            }
+            else
+            {
+                prev->next = current->next;
+            }
         }
+        else
+        {
+            prev = current;
+        }
+        current = current->next;
     }
-    return 0;
 }
 
-void timer_clear_interval(void (*callback)(void))
+void timer_process_due_events()
 {
-    int i;
-    for (i = 0; i < TIMER_COUNT; i++)
+    TimerEvent *current = head;
+    while (current != NULL && current->next_trigger_time <= tick)
     {
-        if (timer_events[i].callback == callback)
+        if (current->callback)
         {
-            timer_events[i].is_active = 0;
+            current->callback();
         }
+
+        head = current->next;
+
+        if (current->is_periodic)
+        {
+            timer_register_handler(current);
+        }
+
+        current = current->next;
     }
 }
