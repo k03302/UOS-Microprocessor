@@ -66,6 +66,7 @@ target_include_directories(${EXECUTABLE} PRIVATE
   src 
   src/peripherals
   src/state_machines
+  src/utils
   ${TOOLCHAIN_INCLUDE}
   )
 
