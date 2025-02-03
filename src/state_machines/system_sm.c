@@ -3,7 +3,6 @@
 #include "system_config.h"
 #include "peripherals/knob.h"
 #include "peripherals/fnd.h"
-#include "peripherals/adc_ctrl.h"
 #include "peripherals/timer.h"
 #include "utils/watch.h"
 
