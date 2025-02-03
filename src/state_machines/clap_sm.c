@@ -1,7 +1,6 @@
 #include "state_machines/clap_sm.h"
 #include "common.h"
 #include "system_config.h"
-#include "peripherals/adc_ctrl.h"
 #include "peripherals/timer.h"
 #include "utils/watch.h"
 
@@ -22,6 +21,9 @@ enum ClapState
 };
 
 static enum ClapState current_state = CLAP_START;
+static int initialize_done = 0;
+static int current_sound_value = 0;
+static int threshold = 0;
 
 static struct watch clap_clamdown_watch;
 
@@ -50,25 +52,30 @@ void clap_state_machine_initialize(void)
     current_state = CLAP_START;
     start_timestamp = 0;
     end_timestamp = 0;
+    threshold = system_get_attribute(SA_SOUND_THRESHOLD);
+    initialize_done = 1;
 
     watch_init(&clap_clamdown_watch, system_get_attribute(SA_CLAP_CALMDOWN_WAIT));
 }
 
 void clap_state_machine(void)
 {
-    assert(adc_get_current_channel() == ADC_CHANNEL_SOUND);
+    assert(initialize_done);
     state_table[current_state]();
+}
+
+void clap_state_machine_set_sound(int sound_value_realtime)
+{
+    current_sound_value = sound_value_realtime;
 }
 
 // CLAP_START 상태 함수
 static void state_start(void)
 {
     assert(current_state == CLAP_START);
-    int sound_value = adc_read(ADC_CHANNEL_SOUND);
-    int threshold = system_get_attribute(SA_SOUND_THRESHOLD);
 
     // 소리가 역치 초과
-    if (sound_value > threshold)
+    if (current_sound_value > threshold)
     {
         start_timestamp = timer_get_tick();
         current_state = CLAP_FIRST_TOP;
@@ -79,11 +86,9 @@ static void state_start(void)
 static void state_top_common(void)
 {
     assert(current_state == CLAP_FIRST_TOP || current_state == CLAP_SECOND_TOP);
-    int sound_value = adc_read(ADC_CHANNEL_SOUND);
-    int threshold = system_get_attribute(SA_SOUND_THRESHOLD);
 
     // 소리가 역치 미만으로 하강
-    if (sound_value < threshold)
+    if (current_sound_value < threshold)
     {
         end_timestamp = timer_get_tick();
         int duration = end_timestamp - start_timestamp;
@@ -117,11 +122,9 @@ static void state_top_common(void)
 static void state_first_bottom(void)
 {
     assert(current_state == CLAP_FIRST_BOTTOM);
-    int sound_value = adc_read(ADC_CHANNEL_SOUND);
-    int threshold = system_get_attribute(SA_SOUND_THRESHOLD);
 
     // 소리가 역치 초과
-    if (sound_value > threshold)
+    if (current_sound_value > threshold)
     {
         start_timestamp = timer_get_tick();
         int gap = start_timestamp - end_timestamp;

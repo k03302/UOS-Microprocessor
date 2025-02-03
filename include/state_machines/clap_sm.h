@@ -20,11 +20,16 @@
 /*
     @brief
     2회 박수를 인식하면 finished 상태가 되는 박수 상태머신
-
-    @note
-    박수 상태머신은 현재 ADC가 sound(ADC2)를 이용한다고 가정함
+    현재 사운드 값을 기반으로 동작하므로
+    clap_state_machine_set_sound로 현재 사운드 값을 업데이트 후 호출
 */
 void clap_state_machine();
+
+/*
+    @brief
+    박수 상태 머신으로 현재 사운드 값을 전달
+*/
+void clap_state_machine_set_sound(int sound_value_realtime);
 
 /*
     @brief
