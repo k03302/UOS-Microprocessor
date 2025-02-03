@@ -1,5 +1,5 @@
-#ifndef UTILS_H
-#define UTILS_H
+#ifndef MATH_H
+#define MATH_H
 
 #include <assert.h>
 

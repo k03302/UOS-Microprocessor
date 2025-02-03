@@ -1,5 +1,5 @@
 #include "system_config.h"
-#include "utils.h"
+#include "utils/math.h"
 
 static int system_attributes[SA_SYSTEM_ATTRIBUTE_END];
 
