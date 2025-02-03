@@ -20,16 +20,9 @@
 /*
     @brief
     2회 박수를 인식하면 finished 상태가 되는 박수 상태머신
-    현재 사운드 값을 기반으로 동작하므로
-    clap_state_machine_set_sound로 현재 사운드 값을 업데이트 후 호출
+    현재 사운드 값을 기반으로 동작
 */
-void clap_state_machine();
-
-/*
-    @brief
-    박수 상태 머신으로 현재 사운드 값을 전달
-*/
-void clap_state_machine_set_sound(int sound_value_realtime);
+void clap_state_machine(int sound_value_realtime);
 
 /*
     @brief

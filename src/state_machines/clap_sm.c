@@ -58,15 +58,11 @@ void clap_state_machine_initialize(void)
     watch_init(&clap_clamdown_watch, system_get_attribute(SA_CLAP_CALMDOWN_WAIT));
 }
 
-void clap_state_machine(void)
+void clap_state_machine(int sound_value_realtime)
 {
     assert(initialize_done);
-    state_table[current_state]();
-}
-
-void clap_state_machine_set_sound(int sound_value_realtime)
-{
     current_sound_value = sound_value_realtime;
+    state_table[current_state]();
 }
 
 // CLAP_START 상태 함수
