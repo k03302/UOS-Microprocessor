@@ -1,5 +1,5 @@
-#ifndef TIMER_H
-#define TIMER_H
+#ifndef TIMER1_H
+#define TIMER1_H
 
 /*
     @brief
