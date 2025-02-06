@@ -5,6 +5,7 @@
 
 int main()
 {
+    timer1_init();
     system_state_machine_initialize();
     sensor_state_machine_initialize();
     while (1)

@@ -29,7 +29,6 @@ void system_state_machine_initialize()
     watch_init(&fnd_update_watch, system_get_attribute(SA_FND_UPDATE_PERIOD));
     watch_init(&threshold_update_watch, system_get_attribute(SA_FND_UPDATE_TIMEOUT));
 
-    timer1_init();
     led8_init();
     fnd_init();
     knob_init();
