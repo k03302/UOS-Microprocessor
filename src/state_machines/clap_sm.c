@@ -4,9 +4,9 @@
 #include "peripherals/timer1.h"
 #include "utils/watch.h"
 
-// 박수의 시작과 끝 타임스탬프를 저장
-static long long start_timestamp = 0;
-static long long end_timestamp = 0;
+// 박수 스파이크의 시작과 끝 타임스탬프를 저장
+static long long spike_start_timestamp = 0;
+static long long spike_end_timestamp = 0;
 
 // 박수 상태
 enum ClapState
@@ -50,12 +50,12 @@ int clap_state_machine_finished(void)
 void clap_state_machine_initialize(void)
 {
     current_state = CLAP_START;
-    start_timestamp = 0;
-    end_timestamp = 0;
+    spike_start_timestamp = 0;
+    spike_end_timestamp = 0;
     threshold = system_get_attribute(SA_SOUND_THRESHOLD);
     initialize_done = 1;
 
-    watch_init(&clap_clamdown_watch, system_get_attribute(SA_CLAP_CALMDOWN_WAIT));
+    watch_init(&clap_clamdown_watch, system_get_attribute(SA_CLAP_MAX_GAP));
 }
 
 void clap_state_machine(int sound_value_realtime)
@@ -73,7 +73,7 @@ static void clap_start(void)
     // 소리가 역치 초과
     if (current_sound_value > threshold)
     {
-        start_timestamp = timer1_get_tick();
+        spike_start_timestamp = timer1_get_tick();
         current_state = CLAP_FIRST_SPIKE;
     }
 }
@@ -86,10 +86,14 @@ static void clap_spike_common(void)
     // 소리가 역치 미만으로 하강
     if (current_sound_value < threshold)
     {
-        end_timestamp = timer1_get_tick();
-        int duration = end_timestamp - start_timestamp;
+        spike_end_timestamp = timer1_get_tick();
+        int duration = spike_end_timestamp - spike_start_timestamp;
 
-        if (duration > system_get_attribute(SA_CLAP_MAX_DURATION))
+        if (duration < system_get_attribute(SA_CLAP_MIN_DURATION))
+        {
+            // 박수 스파이크 안정화를 위한 최소 시간
+        }
+        else if (duration > system_get_attribute(SA_CLAP_MAX_DURATION))
         {
             // 박수 스파이크가 너무 길게 지속됨. 박수 아님 판정. 시작 상태로 복귀
             current_state = CLAP_START;
@@ -118,8 +122,8 @@ static void clap_first_wait(void)
     // 소리가 역치 초과
     if (current_sound_value > threshold)
     {
-        start_timestamp = timer1_get_tick();
-        int gap = start_timestamp - end_timestamp;
+        spike_start_timestamp = timer1_get_tick();
+        int gap = spike_start_timestamp - spike_end_timestamp;
 
         if (gap < system_get_attribute(SA_CLAP_MIN_GAP))
         {
@@ -146,9 +150,21 @@ static void clap_second_wait(void)
     // 소리가 역치 초과
     if (current_sound_value > threshold)
     {
-        current_state = CLAP_START;
+        spike_start_timestamp = timer1_get_tick();
+        int gap = spike_start_timestamp - spike_end_timestamp;
+
+        if (gap < system_get_attribute(SA_CLAP_MIN_GAP))
+        {
+            // 너무 짧은 박수 간 간격. 무시
+        }
+        // SA_CLAP_MIN_GAP < gap < SA_CLAP_MAX_GAP인 경우 새로운 박수 스파이크로 인식
+        else
+        {
+            current_state = CLAP_SECOND_SPIKE;
+        }
     }
 
+    // SA_CLAP_MAX_GAP만큼 경과 시 종료
     if (watch_check(&clap_clamdown_watch))
     {
         current_state = CLAP_END;
