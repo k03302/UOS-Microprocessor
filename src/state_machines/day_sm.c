@@ -44,7 +44,7 @@ void day_state_machine(int light_value)
         break;
 
     case DAY_NIGHT:
-        if (light_value > night_threshold)
+        if (light_value > day_threshold)
         {
             day_sm_night2day_callback();
             day_state = DAY_DAY;
