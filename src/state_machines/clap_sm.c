@@ -11,13 +11,13 @@ static long long end_timestamp = 0;
 // 박수 상태
 enum ClapState
 {
-    CLAP_START,         // 초기 상태
-    CLAP_FIRST_TOP,     // 첫 번째로 소리가 역치 초과
-    CLAP_FIRST_BOTTOM,  // 첫 번째로 역치 미만으로 하강
-    CLAP_SECOND_TOP,    // 두 번째로 소리가 역치 초과
-    CLAP_SECOND_BOTTOM, // 두 번째로 역치 미만으로 하강
-    CLAP_END,           // 박수가 인식된 종료 상태
-    CLAP_STATE_COUNT    // 상태 개수
+    CLAP_START,        // 초기 상태
+    CLAP_FIRST_SPIKE,  // 첫 번째로 소리가 역치 초과
+    CLAP_FIRST_WAIT,   // 첫 번째로 역치 미만으로 하강
+    CLAP_SECOND_SPIKE, // 두 번째로 소리가 역치 초과
+    CLAP_SECOND_WAIT,  // 두 번째로 역치 미만으로 하강
+    CLAP_END,          // 박수가 인식된 종료 상태
+    CLAP_STATE_COUNT   // 상태 개수
 };
 
 static enum ClapState current_state = CLAP_START;
@@ -29,17 +29,17 @@ static struct watch clap_clamdown_watch;
 
 // 상태 함수
 static void clap_start(void);
-static void clap_top_common(void); // CLAP_FIRST_TOP, CLAP_SECOND_TOP에서 상태함수 재사용
-static void clap_first_bottom(void);
-static void clap_second_bottom(void);
+static void clap_spike_common(void); // CLAP_FIRST_SPIKE, CLAP_SECOND_TOP에서 상태함수 재사용
+static void clap_first_wait(void);
+static void clap_second_wait(void);
 static void clap_end(void);
 
 static StateFuncNoParam state_table[CLAP_STATE_COUNT] = {
     clap_start,
-    clap_top_common,
-    clap_first_bottom,
-    clap_top_common,
-    clap_second_bottom,
+    clap_spike_common,
+    clap_first_wait,
+    clap_spike_common,
+    clap_second_wait,
     clap_end};
 
 int clap_state_machine_finished(void)
@@ -74,14 +74,14 @@ static void clap_start(void)
     if (current_sound_value > threshold)
     {
         start_timestamp = timer1_get_tick();
-        current_state = CLAP_FIRST_TOP;
+        current_state = CLAP_FIRST_SPIKE;
     }
 }
 
-// CLAP_FIRST_TOP, CLAP_SECOND_TOP 상태 함수
-static void clap_top_common(void)
+// CLAP_FIRST_SPIKE, CLAP_SECOND_SPIKE 상태 함수
+static void clap_spike_common(void)
 {
-    assert(current_state == CLAP_FIRST_TOP || current_state == CLAP_SECOND_TOP);
+    assert(current_state == CLAP_FIRST_SPIKE || current_state == CLAP_SECOND_SPIKE);
 
     // 소리가 역치 미만으로 하강
     if (current_sound_value < threshold)
@@ -89,11 +89,7 @@ static void clap_top_common(void)
         end_timestamp = timer1_get_tick();
         int duration = end_timestamp - start_timestamp;
 
-        if (duration < system_get_attribute(SA_CLAP_MIN_DURATION))
-        {
-            // 박수 스파이크가 너무 짧게 지속됨. 무시
-        }
-        else if (duration > system_get_attribute(SA_CLAP_MAX_DURATION))
+        if (duration > system_get_attribute(SA_CLAP_MAX_DURATION))
         {
             // 박수 스파이크가 너무 길게 지속됨. 박수 아님 판정. 시작 상태로 복귀
             current_state = CLAP_START;
@@ -101,23 +97,23 @@ static void clap_top_common(void)
         // 정상적인 박수 스파이크 인식
         else
         {
-            if (current_state == CLAP_FIRST_TOP)
+            if (current_state == CLAP_FIRST_SPIKE)
             {
-                current_state = CLAP_FIRST_BOTTOM;
+                current_state = CLAP_FIRST_WAIT;
             }
             else
             {
-                current_state = CLAP_SECOND_BOTTOM;
+                current_state = CLAP_SECOND_WAIT;
                 watch_start(&clap_clamdown_watch);
             }
         }
     }
 }
 
-// CLAP_FIRST_BOTTOM 상태 함수
-static void clap_first_bottom(void)
+// CLAP_FIRST_WAIT 상태 함수
+static void clap_first_wait(void)
 {
-    assert(current_state == CLAP_FIRST_BOTTOM);
+    assert(current_state == CLAP_FIRST_WAIT);
 
     // 소리가 역치 초과
     if (current_sound_value > threshold)
@@ -132,20 +128,26 @@ static void clap_first_bottom(void)
         else if (gap > system_get_attribute(SA_CLAP_MAX_GAP))
         {
             // 너무 긴 박수 간 간격. 첫 번째 박수 스파이크로 간주
-            current_state = CLAP_FIRST_TOP;
+            current_state = CLAP_FIRST_SPIKE;
         }
         else
         {
             // 정상적인 첫 번째 박수 간 간격 인식
-            current_state = CLAP_SECOND_TOP;
+            current_state = CLAP_SECOND_SPIKE;
         }
     }
 }
 
-// CLAP_SECOND_BOTTOM 상태 함수
-static void clap_second_bottom(void)
+// CLAP_SECOND_WAIT 상태 함수
+static void clap_second_wait(void)
 {
-    assert(current_state == CLAP_SECOND_BOTTOM);
+    assert(current_state == CLAP_SECOND_WAIT);
+
+    // 소리가 역치 초과
+    if (current_sound_value > threshold)
+    {
+        current_state = CLAP_START;
+    }
 
     if (watch_check(&clap_clamdown_watch))
     {
