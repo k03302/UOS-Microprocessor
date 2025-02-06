@@ -2,8 +2,8 @@
 This project is from Microcessor Design class at the University of Seoul. Developed with JKit-128-1.
 
 This project is mood light with convenient features such as:
-1. Light detection: Light is automatically on at night.
-2. Double clap detection: User can toggle the light with a double clap.
+1. Outside light detection: Mood light turns on when day->night and turns off when night->day.
+2. Double clap detection: Mood light toggles on user's double clap.
 3. Sound threshold adjustment: User can adjust the threshold sound value. Every sound bigger than the threshold is checked whether it is a doble clap.
 
 # Demo
@@ -55,24 +55,23 @@ https://github.com/user-attachments/assets/2c43986f-2cbc-41b9-9489-d0dff180075a
 
 # Code
 ```
-┌───────────────────────────────┐
-│      System State Machine     │  // State machine that drives the entire system
-├───────────────────────────────┤
-│        Lamp State Machine     │  // State machine that manages the on/off state of the mood lamp
-├───────────────────────────────┤
-│        Clap State Machine     │  // State machine that detects two consecutive claps
-├───────────────────────────────┤
-│ Peripheral Control Programs   │  // Code that controls each peripheral device
-│ (FND, LED, Timer, etc.)       │
+
+  // State machine that drives the entire system
+
+  // State machine that manages the on/off state of the mood lamp
+
+  // State machine that detects two consecutive claps
+
+┌──────────────────────┬────────┐  // System SM: State machine that configures system
+│      Sensor SM       │ System │  // Sensor SM: State machine that reads sensor data from adc
+├──────────┬───────────┤   SM   │  // Day SM: State machine that represents whether it is day or night
+│ Clap SM  │  Day SM   │        │  // Clap SM: State machine that detects two consecutive claps
+├──────────┴───────────┴────────┤
+│ Peripheral Drivers            │  // Drivers for each peripheral device
+│ (FND, LED8, Timer1, etc.)     │
 ├──────────────────────┬────────┤
 │     Pin Settings     │ System │  // Pin Settings: definitions of pin configuration for each peripheral on the ATmega128
 ├──────────────────────┤ Config │
 │    ATmega128 Lib     │        │  // System Config: system-level configuration unrelated to pin settings
 └──────────────────────┴────────┘
 ```
-
-## System State Machine
-![](assets/system_state_machine.png)
-
-## Lamp State Machine
-![](assets/lamp_state_machine.png)
