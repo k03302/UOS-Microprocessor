@@ -4,6 +4,7 @@
 #include "peripherals/knob.h"
 #include "peripherals/fnd.h"
 #include "peripherals/timer1.h"
+#include "peripherals/led8.h"
 #include "utils/watch.h"
 
 enum SystemState
@@ -14,6 +15,9 @@ enum SystemState
 
 static enum SystemState system_mode = SYSTEM_RUN;
 static int sound_threshold_display = 0;
+static int sound_threshold_min = 0;
+static int sound_threshold_max = 1024;
+static int sound_adjust_amount = 5;
 static struct watch fnd_update_watch;
 static struct watch threshold_update_watch;
 static int initialize_done = 0;
@@ -26,7 +30,7 @@ void system_state_machine_initialize()
     watch_init(&threshold_update_watch, system_get_attribute(SA_FND_UPDATE_TIMEOUT));
 
     timer1_init();
-    // led8_init();
+    led8_init();
     fnd_init();
     knob_init();
     sei();
@@ -34,6 +38,9 @@ void system_state_machine_initialize()
     system_init_config();
 
     sound_threshold_display = system_get_attribute(SA_SOUND_THRESHOLD);
+    sound_threshold_min = system_get_attribute(SA_SOUND_THRESHOLD_MIN);
+    sound_threshold_max = system_get_attribute(SA_SOUND_THRESHOLD_MAX);
+    sound_adjust_amount = system_get_attribute(SA_SOUND_THRESHOLD_ADJUST_AMOUNT);
     initialize_done = 1;
 }
 
@@ -53,6 +60,7 @@ void system_state_machine()
             system_mode = SYSTEM_SET;
 
             fnd_start();
+            led8_lock(LED8_OWNER_SYSTEM_SM);
             watch_start(&threshold_update_watch);
             watch_start(&fnd_update_watch);
         }
@@ -61,7 +69,7 @@ void system_state_machine()
     case SYSTEM_SET:
         sound_threshold = system_get_attribute(SA_SOUND_THRESHOLD);
 
-        // led8_accumulate_print(sound_threshold_display, system_get_attribute(SA_SOUND_THRESHOLD_MIN), system_get_attribute(SA_SOUND_THRESHOLD_MAX));
+        led8_accumulate_print(LED8_OWNER_SYSTEM_SM, sound_threshold_display, sound_threshold_min, sound_threshold_max);
 
         fnd_set_print_value(sound_threshold_display);
 
@@ -75,7 +83,8 @@ void system_state_machine()
         if (watch_check(&threshold_update_watch))
         {
             fnd_end();
-            // led8_clear();
+            led8_clear(LED8_OWNER_SYSTEM_SM);
+            led8_unlock(LED8_OWNER_SYSTEM_SM);
             system_mode = SYSTEM_RUN;
             break;
         }
@@ -84,16 +93,16 @@ void system_state_machine()
         if (turn_direction != KNOB_NONE)
         {
             watch_start(&threshold_update_watch);
-            adjust_amount = system_get_attribute(SA_SOUND_THRESHOLD_ADJUST_AMOUNT);
+
             if (turn_direction == KNOB_CLOCKWISE)
             {
                 system_set_attribute(SA_SOUND_THRESHOLD,
-                                     min(sound_threshold + adjust_amount, system_get_attribute(SA_SOUND_THRESHOLD_MAX)));
+                                     min(sound_threshold + sound_adjust_amount, sound_threshold_max));
             }
             else if (turn_direction == KNOB_COUNTERCLOCKWISE)
             {
                 system_set_attribute(SA_SOUND_THRESHOLD,
-                                     max(sound_threshold - adjust_amount, system_get_attribute(SA_SOUND_THRESHOLD_MIN)));
+                                     max(sound_threshold - sound_adjust_amount, sound_threshold_min));
             }
         }
 
