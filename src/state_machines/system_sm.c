@@ -9,11 +9,11 @@
 
 enum SystemState
 {
-    SYSTEM_RUN,
+    SYSTEM_IDLE,
     SYSTEM_SET
 };
 
-static enum SystemState system_mode = SYSTEM_RUN;
+static enum SystemState system_mode = SYSTEM_IDLE;
 static int sound_threshold_display = 0;
 static int sound_threshold_min = 0;
 static int sound_threshold_max = 1024;
@@ -24,7 +24,7 @@ static int initialize_done = 0;
 
 void system_state_machine_initialize()
 {
-    system_mode = SYSTEM_RUN;
+    system_mode = SYSTEM_IDLE;
 
     watch_init(&fnd_update_watch, system_get_attribute(SA_FND_UPDATE_PERIOD));
     watch_init(&threshold_update_watch, system_get_attribute(SA_FND_UPDATE_TIMEOUT));
@@ -53,7 +53,7 @@ void system_state_machine()
 
     switch (system_mode)
     {
-    case SYSTEM_RUN:
+    case SYSTEM_IDLE:
 
         if (turn_direction != KNOB_NONE)
         {
@@ -85,7 +85,7 @@ void system_state_machine()
             fnd_end();
             led8_clear(LED8_OWNER_SYSTEM_SM);
             led8_unlock(LED8_OWNER_SYSTEM_SM);
-            system_mode = SYSTEM_RUN;
+            system_mode = SYSTEM_IDLE;
             break;
         }
 
