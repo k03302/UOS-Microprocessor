@@ -18,7 +18,7 @@ void system_init_config()
     system_attributes[SA_FND_NEXT_DIGIT_PERIOD] = 1;
     system_attributes[SA_FND_UPDATE_PERIOD] = 100;
     system_attributes[SA_FND_UPDATE_TIMEOUT] = 2000;
-    system_attributes[SA_ADC_CHANGE_TIMEOUT] = 10;
+    system_attributes[SA_ADC_CHANGE_TIMEOUT] = 1;
     system_attributes[SA_CDS_NIGHT_THRESHOLD] = 600;
     system_attributes[SA_CDS_DAY_THRESHOLD] = 900;
     system_attributes[SA_CDS_CHECK_PERIOD] = 1000;
