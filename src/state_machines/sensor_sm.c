@@ -23,6 +23,8 @@ static enum SensorState sensor_mode = SENSOR_CHECK_LIGHT;
 static struct watch adc_change_watch;
 static struct watch sound_check_watch;
 static int initialize_done = 0; // 초기화 함수를 호출했는지 여부
+static int sound_threshold_min = 0;
+static int sound_threshold_max = 1024;
 
 // 상태 함수
 static void sensor_check_light(void);
@@ -43,6 +45,9 @@ void sensor_state_machine_initialize()
 
     watch_init(&adc_change_watch, system_get_attribute(SA_ADC_CHANGE_TIMEOUT));
     watch_init(&sound_check_watch, system_get_attribute(SA_CDS_CHECK_PERIOD));
+
+    sound_threshold_min = system_get_attribute(SA_SOUND_THRESHOLD_MIN);
+    sound_threshold_max = system_get_attribute(SA_SOUND_THRESHOLD_MAX);
 
     adc_init(ADC_CHANNEL_CDS);
     led8_init();
@@ -96,6 +101,7 @@ static void sensor_adc_change_light(void)
 static void sensor_check_sound(void)
 {
     int sound_value_realtime = adc_read(ADC_CHANNEL_SOUND);
+    led8_accumulate_print(LED8_OWNER_SENSOR_SM, sound_value_realtime, sound_threshold_min, sound_threshold_max);
     clap_state_machine(sound_value_realtime);
 
     if (clap_state_machine_finished())

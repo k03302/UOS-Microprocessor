@@ -6,7 +6,7 @@
 enum LED8Owner
 {
     LED8_OWNER_NONE = 0,
-    LED8_OWNER_CLAP_SM = 1,
+    LED8_OWNER_SENSOR_SM = 1,
     LED8_OWNER_SYSTEM_SM = 2
 };
 
