@@ -75,3 +75,15 @@ https://github.com/user-attachments/assets/2c43986f-2cbc-41b9-9489-d0dff180075a
 │    ATmega128 Lib     │        │  // System Config: system-level configuration unrelated to pin settings
 └──────────────────────┴────────┘
 ```
+
+# System State Machine
+![](./assets/system_sm.png)
+# Sensor State Machine
+![](./assets/sensor_sm.png)
+
+# Day State Machine
+![](./assets/day_sm.png)
+
+# Clap State Machine
+![](./assets/clap_sm.png)
+![](./assets/double_clap.png)
