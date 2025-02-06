@@ -49,7 +49,6 @@ void system_state_machine()
     assert(initialize_done);
     enum KnobTurnDirection turn_direction = knob_check();
     int sound_threshold;
-    int adjust_amount;
 
     switch (system_mode)
     {
