@@ -20,6 +20,8 @@ void timer1_init(void)
 
     // 타이머1의 비교 일치 인터럽트(OCIE1A)를 활성화하는 설정
     TIMSK |= (1 << OCIE1A);
+
+    sei();
 }
 
 unsigned long long timer1_get_tick(void)

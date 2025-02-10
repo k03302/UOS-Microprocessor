@@ -32,7 +32,6 @@ void system_state_machine_initialize()
     led8_init();
     fnd_init();
     knob_init();
-    sei();
 
     system_init_config();
 
