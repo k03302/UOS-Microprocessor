@@ -75,7 +75,7 @@ target_include_directories(${EXECUTABLE} PRIVATE include)
 
 # Compiler options
 target_compile_options(${EXECUTABLE} PRIVATE
-  -mmcu=avr128da48
+  -mmcu=atmega128
   
   -fdata-sections
   -ffunction-sections
@@ -90,7 +90,7 @@ target_compile_options(${EXECUTABLE} PRIVATE
 
 # Linker options
 target_link_options(${EXECUTABLE} PRIVATE
-  -mmcu=avr128da48
+  -mmcu=atmega128
   
   -flto 
   -fuse-linker-plugin
